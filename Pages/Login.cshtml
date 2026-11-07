@@ -1,0 +1,38 @@
+@page
+@model HydroSentinel.Pages.LoginModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Log in";
+}
+
+<section class="auth-main auth-login" aria-labelledby="login-title">
+    <div class="shell auth-grid">
+        <div class="auth-copy">
+            <p class="auth-eyebrow">Welcome back</p>
+            <h1 id="login-title">Log in to your HydroSentinel account</h1>
+            <p>Access your water system, monitor performance, and stay in control &mdash; anytime, anywhere.</p>
+            <ul class="auth-benefits" aria-label="HydroSentinel focus areas">
+                <li class="auth-benefit"><span class="auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H4z"/><path d="M8 20h8M12 16v4"/></svg></span><span><strong>Monitor your system</strong><span>Keep important water-system context easier to review.</span></span></li>
+                <li class="auth-benefit"><span class="auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><span><strong>Protect your equipment</strong><span>Explore product information focused on safer pump operation.</span></span></li>
+                <li class="auth-benefit"><span class="auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8.5"/></svg></span><span><strong>Manage water with clarity</strong><span>Bring water-management questions into one conversation.</span></span></li>
+            </ul>
+            <figure class="auth-photo-frame">
+                <img src="~/images/Smart Water System Installation.png" alt="HydroSentinel controller installed beside a blue tank and pump" width="1672" height="941" loading="eager" fetchpriority="high" />
+            </figure>
+        </div>
+        <div class="auth-panel">
+            <h2>Sign in</h2>
+            <p>Use your Firmlon account details to access your HydroSentinel experience.</p>
+            <form class="auth-form" method="post" aria-label="Sign in">
+                <div asp-validation-summary="ModelOnly" class="auth-notice" role="alert"></div>
+                <input type="hidden" asp-for="ReturnUrl" />
+                <fieldset class="auth-fields">
+                    <div class="auth-field"><label asp-for="Input.Email">Email address</label><input asp-for="Input.Email" type="email" autocomplete="email" placeholder="Enter your email address" /><span asp-validation-for="Input.Email"></span></div>
+                    <div class="auth-field"><label asp-for="Input.Password">Password</label><div class="auth-password-field"><input asp-for="Input.Password" type="password" autocomplete="current-password" placeholder="Enter your password" /></div><span asp-validation-for="Input.Password"></span></div>
+                </fieldset>
+                <button class="button button-primary auth-submit" type="submit">Sign in <span aria-hidden="true">&rarr;</span></button>
+            </form>
+            <p class="auth-secondary">New to HydroSentinel? <a asp-page="/GetStarted">Get started</a></p>
+        </div>
+    </div>
+</section>

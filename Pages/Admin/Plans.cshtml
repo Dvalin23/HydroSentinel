@@ -1,0 +1,5 @@
+@page
+@model HydroSentinel.Pages.Admin.AdminPageModel
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Plans"; }
+<div class="admin-page-head"><div><p class="admin-page-kicker">Commercial catalogue</p><h1>Plans</h1><p>Authoritative display of the shared PlanCatalog figures.</p></div><a class="admin-button admin-button-secondary" asp-page="/Admin/Subscriptions">Back to subscriptions</a></div>
+<div class="admin-notice">Plan figures are read from the existing PlanCatalog. They are not a payment quote and cannot be edited from the admin preview.</div><div class="admin-grid admin-grid-3" style="margin-top:18px">@foreach (var plan in Model.Portal.Plans) { <article class="admin-card"><div class="admin-card-heading"><h2>@plan.Name</h2><span class="admin-status active">Catalog</span></div><div class="admin-plan-price">₦@plan.MonthlyPrice.ToString("N0") <small>/ month</small></div><p style="font-size:11px;color:var(--admin-muted);line-height:1.5">@plan.Description</p><div class="admin-detail-list"><div><span>Hardware</span><b>₦@plan.HardwarePrice.ToString("N0")</b></div><div><span>Allowance</span><b>@plan.DeviceAllowance</b></div></div></article> }</div>

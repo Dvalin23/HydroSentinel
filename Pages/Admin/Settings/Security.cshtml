@@ -1,0 +1,5 @@
+@page
+@model HydroSentinel.Pages.Admin.AdminPageModel
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Admin security"; }
+<div class="admin-page-head"><div><p class="admin-page-kicker">Settings / security</p><h1>Security</h1><p>Admin access controls must be owned by the identity and audit layers.</p></div><a class="admin-button admin-button-secondary" asp-page="/Admin/Settings">Back to settings</a></div>
+<div class="admin-grid admin-grid-2"><article class="admin-card"><h2>Access policy</h2><div class="admin-detail-list" style="margin-top:18px"><div><span>Authentication</span><b>Not connected</b></div><div><span>Multi-factor auth</span><b>Not connected</b></div><div><span>Role assignments</span><b>Not connected</b></div></div></article><article class="admin-card"><h2>Audit boundary</h2><p style="font-size:11px;color:var(--admin-muted);line-height:1.6">No security settings are mutable in the demo. Production changes require an authenticated identity, authorization policy, and immutable audit record.</p><button class="admin-button admin-button-secondary" type="button" disabled>Security controls unavailable</button></article></div>

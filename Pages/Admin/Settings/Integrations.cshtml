@@ -1,0 +1,5 @@
+@page
+@model HydroSentinel.Pages.Admin.AdminPageModel
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Admin integrations"; }
+<div class="admin-page-head"><div><p class="admin-page-kicker">Settings / integrations</p><h1>Integrations</h1><p>Backend connection status will be surfaced here without exposing secrets.</p></div><a class="admin-button admin-button-secondary" asp-page="/Admin/Settings">Back to settings</a></div>
+<div class="admin-grid admin-grid-2">@foreach (var item in new[] { "Identity provider", "Device registry", "Telemetry service", "Payment provider", "Support service", "Notification delivery" }) { <article class="admin-card"><div class="admin-card-heading"><h2>@item</h2><span class="admin-status">Not connected</span></div><p style="font-size:11px;color:var(--admin-muted);line-height:1.6">Connection details are intentionally unavailable until the backend contract is approved.</p><button class="admin-button admin-button-secondary" type="button" disabled>Configure unavailable</button></article> }</div>

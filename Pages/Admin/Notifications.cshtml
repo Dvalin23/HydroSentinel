@@ -1,0 +1,5 @@
+@page
+@model HydroSentinel.Pages.Admin.AdminPageModel
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Notifications"; }
+<div class="admin-page-head"><div><p class="admin-page-kicker">System inbox</p><h1>Notifications</h1><p>Keep operational follow-up visible without sending external messages.</p></div>@if(Model.IsDemo){<form method="post"><button class="admin-button admin-button-secondary" asp-page-handler="MarkNotificationsRead">Mark all read</button></form>}</div>
+@if (!Model.IsDemo) { <div class="admin-state"><strong>Notification centre unavailable</strong><p>Notification delivery and read state require authenticated backend services.</p></div> } else { <div class="admin-demo-note">DEVELOPMENT DEMO · Notifications are local in-memory projections. No email, SMS, or push message is sent.</div><div class="admin-card"><div class="admin-detail-list">@foreach(var x in Model.Data.Data.Notifications) { <div><span><strong>@x.Title</strong><br />@x.Message<br /><small>@x.Created.LocalDateTime.ToString("g") · @x.Category</small></span><b class="admin-status @(x.IsRead ? "" : "active")">@(x.IsRead ? "Read" : "Unread")</b></div>}</div></div> }

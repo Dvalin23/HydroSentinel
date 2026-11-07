@@ -1,0 +1,17 @@
+:root {
+  --portal-navy: #082b3b; --portal-navy-2: #103f50; --portal-green: #008f68; --portal-green-dark: #006f53;
+  --portal-blue: #1685e5; --portal-bg: #f4f8fb; --portal-surface: #fff; --portal-text: #153646; --portal-muted: #667f8d;
+  --portal-border: #dce7ed; --portal-danger: #c83e46; --portal-warning: #b86a00;
+  --portal-radius-xs: 7px; --portal-radius-sm: 10px; --portal-radius-md: 15px; --portal-radius-lg: 20px; --portal-radius-xl: 26px;
+  --portal-shadow-sm: 0 5px 16px rgb(8 43 59 / 6%); --portal-shadow-md: 0 14px 34px rgb(8 43 59 / 9%);
+  --portal-shadow-inset: inset 0 1px 0 rgb(255 255 255 / 75%);
+  --portal-ease: 190ms ease; --portal-sidebar: 264px;
+  --portal-focus: #1685e5; --portal-green-hover: #006f53; --portal-green-soft: #effaf6; --portal-surface-soft: #f7fbfc;
+  --portal-space-panel: clamp(20px, 2.5vw, 30px); --portal-space-compact: 16px;
+  --portal-surface-elevated: #ffffff; --portal-surface-tint: #f8fbfc; --portal-surface-feature: #f7fbfc;
+  --portal-border-soft: #e1ecef; --portal-radius-control: 10px; --portal-radius-panel: 20px; --portal-radius-feature: 26px;
+  --portal-shadow-feature: 0 18px 42px rgb(8 43 59 / 9%); --portal-grid-gap: clamp(16px, 2vw, 24px);
+  --portal-surface-quiet: #f1f7f8; --portal-success-soft: #effaf6; --portal-warning-soft: #fff7e8;
+  --portal-focus-ring: 0 0 0 4px rgb(22 133 229 / 18%); --portal-control-height: 44px;
+  --portal-header-height: 86px; --portal-content-max: 1400px;
+}

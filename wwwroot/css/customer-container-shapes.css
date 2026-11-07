@@ -1,0 +1,428 @@
+/*
+   Shared portal surface language.
+   Keep this layer after page CSS so shape and proportion decisions remain
+   centralized without changing page markup or behavior.
+*/
+html {
+  overflow-x: hidden;
+}
+
+.customer-body {
+  background: #f1f6f8;
+  overflow-x: hidden;
+}
+
+/* Compact controls use a smaller radius so dense areas stay crisp. */
+.customer-button,
+.customer-icon-button,
+.customer-collapse-button,
+.customer-mobile-toggle,
+.customer-account-popover,
+.customer-nav-link,
+.customer-status-badge,
+.customer-button-secondary,
+.customer-button-primary {
+  border-radius: var(--portal-radius-sm);
+}
+
+.customer-button,
+.customer-icon-button,
+.customer-nav-link,
+.customer-breadcrumb a,
+.customer-account-trigger,
+.customer-text-link,
+.dashboard-text-link,
+.billing-text-link,
+.link-row,
+.footer-actions a {
+  transition: color var(--portal-ease), background-color var(--portal-ease), border-color var(--portal-ease), box-shadow var(--portal-ease), transform var(--portal-ease);
+}
+
+.customer-main {
+  padding-top: clamp(34px, 4.4vw, 56px);
+}
+
+/* Broad page introductions are surfaces, while dense lists remain flatter. */
+.customer-page-intro,
+.dashboard-intro,
+.monitoring-intro,
+.alerts-intro,
+.alert-details-intro,
+.billing-intro,
+.stage7-intro {
+  position: relative;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid #d9e8ed;
+  border-radius: var(--portal-radius-xl);
+  background: linear-gradient(118deg, #fff 0%, #f8fcfd 72%, #eef8f5 100%);
+  box-shadow: var(--portal-shadow-sm), var(--portal-shadow-inset);
+}
+
+.customer-page-intro::before,
+.dashboard-intro::before,
+.monitoring-intro::before,
+.alerts-intro::before,
+.alert-details-intro::before,
+.billing-intro::before,
+.stage7-intro::before {
+  position: absolute;
+  inset: 18px auto 18px 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--portal-green);
+  content: "";
+}
+
+.customer-page-intro h2,
+.dashboard-intro h2,
+.monitoring-intro h2,
+.alerts-intro h2,
+.alert-details-intro h2,
+.billing-intro h2,
+.stage7-intro h2 {
+  max-width: 820px;
+}
+
+/* Main content panels: larger than controls, but not inflated into pills. */
+.customer-panel,
+.dashboard-panel,
+.device-table-panel,
+.device-form-panel,
+.device-detail-panel,
+.device-identity-panel,
+.billing-panel,
+.stage7-panel,
+.faq-panel,
+.alert-detail-panel,
+.monitoring-chart-panel,
+.monitoring-readings-panel,
+.alerts-table-panel {
+  border-color: #d7e5ea;
+  border-radius: var(--portal-radius-lg);
+  box-shadow: var(--portal-shadow-sm), var(--portal-shadow-inset);
+}
+
+.dashboard-panel,
+.customer-panel,
+.billing-panel,
+.stage7-panel {
+  overflow: hidden;
+}
+
+.dashboard-panel-heading,
+.alerts-panel-heading,
+.monitoring-panel-heading,
+.billing-panel-heading,
+.stage7-panel-head,
+.panel-head {
+  padding: 20px var(--portal-space-panel) 15px;
+  background: #fcfefe;
+}
+
+.dashboard-panel-heading,
+.alerts-panel-heading,
+.monitoring-panel-heading,
+.billing-panel-heading,
+.stage7-panel-head,
+.panel-head {
+  border-bottom-color: #e1ecef;
+}
+
+/* Dashboard hierarchy: compact metrics, dominant device panel, quiet action rail. */
+.dashboard-metrics {
+  gap: 14px;
+}
+
+.dashboard-metric {
+  min-height: 96px;
+  padding: 17px 16px;
+  border-color: #d7e5ea;
+  border-radius: var(--portal-radius-md);
+  box-shadow: 0 3px 12px rgb(8 43 59 / 5%);
+}
+
+.dashboard-metric:hover,
+.dashboard-metric:focus-visible {
+  border-color: #8acdb9;
+  box-shadow: 0 9px 22px rgb(0 143 104 / 10%);
+}
+
+.dashboard-icon,
+.dashboard-empty-icon,
+.dashboard-state-icon,
+.dashboard-chart-icon,
+.device-empty-mark,
+.monitoring-state-icon,
+.alerts-state-icon,
+.alert-detail-state-icon,
+.stage7-state-icon {
+  border-radius: var(--portal-radius-md);
+}
+
+.dashboard-main-grid,
+.dashboard-secondary-grid,
+.dashboard-panel,
+.dashboard-chart-empty,
+.device-empty-state,
+.monitoring-state-banner,
+.alerts-state-banner,
+.catalog-notice,
+.billing-notice {
+  min-width: 0;
+}
+
+.dashboard-main-grid {
+  gap: 20px;
+}
+
+.dashboard-main-grid > .dashboard-panel:first-child {
+  min-height: 260px;
+}
+
+.dashboard-quick-actions {
+  overflow: hidden;
+  border: 1px solid #d7e5ea;
+  border-radius: var(--portal-radius-md);
+  background: #fff;
+  box-shadow: var(--portal-shadow-sm);
+}
+
+.dashboard-quick-actions a {
+  min-height: 68px;
+  border-color: #e1ecef;
+}
+
+/* Dense data areas: restrained rounding and comfortable row rhythm. */
+.device-toolbar,
+.monitoring-toolbar,
+.alerts-controls,
+.history-toolbar {
+  border: 1px solid #d7e5ea;
+  border-radius: var(--portal-radius-md);
+  background: #fff;
+  box-shadow: var(--portal-shadow-sm);
+}
+
+.device-table-wrap,
+.comparison-table-wrap,
+.table-wrap,
+.alerts-future-table-wrap {
+  overflow: auto;
+  border-color: #d7e5ea;
+  border-radius: var(--portal-radius-sm);
+}
+
+.device-table-wrap th,
+.comparison-table th,
+.history-grid th {
+  background: #f3f8f9;
+}
+
+.device-table-wrap td,
+.comparison-table td,
+.history-grid td {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.device-empty-state,
+.monitoring-empty-state,
+.alerts-empty-state,
+.stage7-state,
+.table-empty {
+  border-radius: var(--portal-radius-md);
+}
+
+.device-help-band {
+  border-radius: var(--portal-radius-lg);
+  box-shadow: 0 12px 28px rgb(8 43 59 / 10%);
+}
+
+.device-identity-panel {
+  border-radius: var(--portal-radius-xl);
+}
+
+.device-identity-visual {
+  background: #e8f2f4;
+}
+
+.device-tabs {
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid #d7e5ea;
+  border-radius: var(--portal-radius-md);
+  background: #f7fbfc;
+}
+
+.device-tabs a {
+  border-radius: var(--portal-radius-xs);
+}
+
+.device-tabs a:hover,
+.device-tabs a:focus-visible {
+  background: var(--portal-green-soft);
+}
+
+/* Plans and billing use a stronger featured surface without making every card equal. */
+.plan-grid {
+  align-items: stretch;
+  gap: 16px;
+}
+
+.plan-card {
+  border-color: #d7e5ea;
+  border-radius: var(--portal-radius-lg);
+  box-shadow: var(--portal-shadow-sm), var(--portal-shadow-inset);
+}
+
+.plan-card:hover,
+.plan-card:focus-within {
+  border-color: #8acdb9;
+  box-shadow: 0 12px 26px rgb(0 143 104 / 10%);
+}
+
+.plan-card.is-featured {
+  border-color: var(--portal-green);
+  box-shadow: 0 12px 28px rgb(0 143 104 / 12%);
+}
+
+.billing-state,
+.device-unavailable-badge {
+  border-radius: var(--portal-radius-sm);
+}
+
+.billing-state-grid > div,
+.billing-detail-list,
+.billing-step-list,
+.billing-link-row,
+.history-footer {
+  border-radius: var(--portal-radius-md);
+}
+
+.result-panel {
+  border-radius: var(--portal-radius-xl);
+  background: linear-gradient(135deg, #fff, #f1faf6);
+}
+
+/* Support/account pages use panels as grouped settings surfaces, not loose cards. */
+.stage7-panel,
+.faq-panel {
+  border-color: #d7e5ea;
+}
+
+.stage7-panel-body,
+.panel-body {
+  padding: var(--portal-space-panel);
+}
+
+.link-row,
+.footer-actions a {
+  border-radius: var(--portal-radius-sm);
+}
+
+.link-row:hover,
+.link-row:focus-visible,
+.footer-actions a:hover,
+.footer-actions a:focus-visible {
+  border-color: #9bd8c5;
+  background: var(--portal-green-soft);
+}
+
+/* Only interactive surfaces receive hover lift/accent. */
+.customer-nav-link:hover,
+.customer-nav-link:focus-visible {
+  border-left-color: #6ce0bc;
+  background: rgb(0 143 104 / 16%);
+}
+
+.customer-nav-link.is-active {
+  border-left-color: #65e3bb;
+  background: rgb(0 143 104 / 25%);
+}
+
+.customer-text-link:hover,
+.dashboard-text-link:hover,
+.billing-text-link:hover,
+.customer-breadcrumb a:hover {
+  color: var(--portal-green-dark);
+}
+
+.customer-button-secondary:hover {
+  border-color: #83cbb5;
+  color: var(--portal-green-dark);
+  background: var(--portal-green-soft);
+}
+
+@media (max-width: 900px) {
+  .customer-page-intro,
+  .dashboard-intro,
+  .monitoring-intro,
+  .alerts-intro,
+  .alert-details-intro,
+  .billing-intro,
+  .stage7-intro {
+    border-radius: var(--portal-radius-lg);
+  }
+}
+
+@media (max-width: 600px) {
+  .customer-main {
+    padding-bottom: 52px;
+  }
+
+  .customer-page-intro,
+  .dashboard-intro,
+  .monitoring-intro,
+  .alerts-intro,
+  .alert-details-intro,
+  .billing-intro,
+  .stage7-intro {
+    padding: 21px 18px;
+    border-radius: var(--portal-radius-md);
+  }
+
+  .customer-page-intro::before,
+  .dashboard-intro::before,
+  .monitoring-intro::before,
+  .alerts-intro::before,
+  .alert-details-intro::before,
+  .billing-intro::before,
+  .stage7-intro::before {
+    inset-block: 14px;
+  }
+
+  .dashboard-panel,
+  .customer-panel,
+  .device-table-panel,
+  .device-form-panel,
+  .device-detail-panel,
+  .device-identity-panel,
+  .billing-panel,
+  .stage7-panel,
+  .faq-panel,
+  .alert-detail-panel,
+  .monitoring-chart-panel,
+  .monitoring-readings-panel,
+  .alerts-table-panel {
+    border-radius: var(--portal-radius-md);
+  }
+
+  .dashboard-panel-heading,
+  .alerts-panel-heading,
+  .monitoring-panel-heading,
+  .billing-panel-heading,
+  .stage7-panel-head,
+  .panel-head {
+    padding-inline: 18px;
+  }
+
+  .stage7-panel-body,
+  .panel-body {
+    padding: 19px 18px;
+  }
+
+  .dashboard-quick-actions {
+    border-radius: var(--portal-radius-sm);
+  }
+}
+

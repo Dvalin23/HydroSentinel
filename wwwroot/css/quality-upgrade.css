@@ -1,0 +1,27 @@
+:root {
+  --firmlon-green: var(--green, #087f5b);
+  --firmlon-green-hover: var(--green-dark, #056447);
+  --firmlon-focus: #1685e5;
+  --quality-transition: 190ms ease;
+}
+
+.test-mode-banner { position: relative; z-index: 100; padding: 9px 16px; color: #fff; background: #7b4b00; font-size: .78rem; font-weight: 800; letter-spacing: .02em; text-align: center; }
+.customer-demo-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;color:var(--portal-green-dark,#006f53);border:1px solid #bfe6d7;border-radius:999px;background:#f1fbf7;font-size:.68rem;font-weight:800;text-decoration:none}.customer-demo-chip span:first-child{width:7px;height:7px;border-radius:50%;background:var(--portal-green,#008f68);box-shadow:0 0 0 3px rgb(0 143 104 / 13%)}.customer-demo-chip:hover{color:var(--portal-green-dark,#006f53);border-color:var(--portal-green,#008f68);background:#e5f8f0}
+a, button, input, select, textarea { transition: color var(--quality-transition), background-color var(--quality-transition), border-color var(--quality-transition), box-shadow var(--quality-transition), transform var(--quality-transition); }
+a:hover { color: var(--firmlon-green); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid color-mix(in srgb, var(--firmlon-focus) 48%, transparent); outline-offset: 3px; }
+button:not(:disabled):hover, .button:not(:disabled):hover, .customer-button:not(:disabled):hover { transform: translateY(-2px); }
+button:disabled, .button:disabled, .customer-button:disabled { cursor: not-allowed; opacity: .68; transform: none !important; }
+.icon-inline, .dashboard-icon svg, .customer-nav-icon svg, .customer-header-icon svg { stroke-width: 1.8; }
+.customer-button-primary:hover:not(:disabled) { background: var(--portal-green-dark, #006f53); }
+.customer-button-secondary:hover:not(:disabled) { color: var(--portal-green, #008f68); border-color: var(--portal-green, #008f68); background: #f0fbf7; }
+.customer-text-link:hover, .dashboard-text-link:hover { color: var(--portal-green-dark, #006f53); }
+.customer-nav-link:hover { color: #fff; background: rgb(0 143 104 / 18%); }
+.customer-nav-link.is-active { box-shadow: inset 3px 0 0 var(--portal-green, #008f68); }
+.dashboard-pricing-preview { margin-top: 12px !important; padding-top: 12px; border-top: 1px solid var(--portal-border, #dce7ed); color: var(--portal-green, #008f68) !important; font-size: .76rem !important; font-weight: 750; }
+.dashboard-panel, .billing-panel, .stage7-panel, .plan-card { transition: border-color var(--quality-transition), box-shadow var(--quality-transition), transform var(--quality-transition); }
+.plan-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgb(8 43 59 / 10%); }
+.footer-links a:hover, .footer-email:hover { color: var(--firmlon-green); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+.demo-mode-banner{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:9px 16px;color:#fff;background:#5c3b00;font-size:.75rem;font-weight:650;text-align:center}.demo-mode-banner a{color:#fff;text-decoration:underline}.demo-mode-banner form{display:inline}.demo-mode-banner button{padding:3px 8px;border:1px solid rgb(255 255 255 / 55%);border-radius:6px;color:#fff;background:transparent;font:inherit;cursor:pointer}.demo-entry-panel{max-width:760px;margin:80px auto;padding:48px;border:1px solid #dce7ed;border-radius:22px;background:#fff;box-shadow:0 18px 44px rgb(8 43 59 / 11%)}.demo-entry-panel h1{max-width:620px;color:var(--navy,#082b3b);font-size:clamp(2rem,5vw,3.8rem);line-height:1.02}.demo-entry-panel .lede{max-width:620px;color:#667f8d;line-height:1.7}.demo-entry-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}.demo-confirmation{margin-top:18px;padding:12px;border-left:3px solid #008f68;color:#07533f;background:#effaf6}
+.demo-mode-banner{display:none}.site-header,.site-footer,.customer-header,.admin-topbar{box-shadow:0 1px 0 rgb(8 43 59 / 2%)}input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--firmlon-focus);box-shadow:var(--shadow-focus,0 0 0 4px rgb(17 155 200 / 18%));outline:none}.admin-button:focus-visible,.admin-icon-button:focus-visible{box-shadow:0 0 0 4px rgb(56 184 116 / 18%);outline:none}

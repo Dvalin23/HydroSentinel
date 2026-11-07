@@ -1,0 +1,271 @@
+/* Responsive audit fixes: tablet composition, narrow controls, and contained scrolling. */
+
+/* Keep the comparison table readable without allowing its overflow to escape the wrapper. */
+.comparison-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.comparison-table {
+    max-width: none;
+}
+
+@media (max-width: 1040px) and (min-width: 901px) {
+    .header-inner {
+        gap: 20px;
+    }
+
+    .brand {
+        width: 174px;
+    }
+
+    .primary-navigation {
+        gap: 12px;
+    }
+
+    .nav-link {
+        font-size: .8rem;
+    }
+
+    .nav-actions .button-small {
+        padding-inline: 13px;
+    }
+}
+
+@media (max-width: 900px) and (min-width: 761px) {
+    /* A 768px tablet has enough room for content, but not for two dense columns. */
+    .product-hero-grid,
+    .how-hero-grid,
+    .pricing-hero-grid,
+    .about-hero-grid,
+    .contact-hero-grid,
+    .product-overview-grid,
+    .product-specs-grid,
+    .product-help-grid,
+    .system-grid,
+    .faq-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 42px;
+    }
+
+    .product-hero-grid,
+    .how-hero-grid,
+    .pricing-hero-grid,
+    .about-hero-grid,
+    .contact-hero-grid {
+        padding-block: 56px 64px;
+    }
+
+    .product-hero-copy,
+    .how-hero-copy,
+    .pricing-hero-copy,
+    .about-hero-copy,
+    .contact-hero-copy {
+        padding: 0;
+    }
+
+    .product-hero-media,
+    .how-hero-media,
+    .pricing-hero-media,
+    .about-hero-media,
+    .contact-hero-media {
+        padding: 0 0 28px;
+    }
+
+    .product-hero-media,
+    .how-hero-media,
+    .pricing-hero-media,
+    .about-hero-media,
+    .contact-hero-media {
+        max-width: 760px;
+        width: 100%;
+        margin-inline: auto;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-form-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .process-grid,
+    .benefit-grid,
+    .product-feature-grid,
+    .about-values-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .plan-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .plan-card {
+        min-height: 0;
+        padding: 28px 22px 24px;
+    }
+
+    .process-card {
+        min-height: 0;
+    }
+
+    .system-map {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .system-connector {
+        display: none;
+    }
+}
+
+@media (max-width: 760px) {
+    .button {
+        min-height: 48px;
+    }
+
+    .hero-copy h1,
+    .product-hero-copy h1,
+    .how-hero-copy h1,
+    .pricing-hero-copy h1,
+    .about-hero-copy h1,
+    .contact-hero-copy h1 {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .hero-actions,
+    .product-actions,
+    .pricing-hero-actions {
+        align-items: stretch;
+    }
+
+    .hero-actions .button,
+    .product-actions .button,
+    .pricing-hero-actions .button {
+        min-width: min(100%, 220px);
+    }
+
+    .system-map {
+        min-width: 0;
+    }
+
+    .comparison-wrap {
+        margin-inline: 0;
+        border-radius: 0;
+    }
+
+    .comparison-wrap::after {
+        content: "Swipe to compare plans";
+        display: block;
+        padding: 9px 14px;
+        color: var(--slate);
+        background: #f7fbfc;
+        border-top: 1px solid #e7eff1;
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-align: right;
+    }
+
+    .comparison-table {
+        min-width: 680px;
+    }
+
+    .contact-form-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-field-wide {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 375px) {
+    :root {
+        --gutter: 14px;
+    }
+
+    .shell,
+    .section-shell,
+    .content-shell {
+        width: calc(100% - 28px);
+    }
+
+    .brand {
+        width: 145px;
+    }
+
+    .header-inner {
+        gap: 12px;
+    }
+
+    .hero-copy,
+    .product-hero-copy,
+    .how-hero-copy,
+    .pricing-hero-copy,
+    .about-hero-copy,
+    .contact-hero-copy {
+        padding-top: 48px;
+    }
+
+    .hero-copy h1,
+    .product-hero-copy h1,
+    .how-hero-copy h1,
+    .pricing-hero-copy h1,
+    .about-hero-copy h1,
+    .contact-hero-copy h1 {
+        font-size: clamp(2.55rem, 14vw, 3.25rem);
+    }
+
+    .button,
+    .hero-actions .button,
+    .product-actions .button,
+    .pricing-hero-actions .button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .pricing-cta .button,
+    .contact-final-actions .button,
+    .how-final-actions .button,
+    .product-final-cta .button,
+    .about-final-inner .button {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+}
+
+/* Avoid font-dependent FAQ symbols; draw the plus/minus with CSS bars. */
+.faq-list summary::before,
+.faq-list summary::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    right: 3px;
+    width: 14px;
+    height: 2px;
+    background: var(--green);
+    transition: transform var(--ease), opacity var(--ease);
+}
+
+.faq-list summary::after {
+    transform: rotate(90deg);
+}
+
+.faq-list details[open] summary::after {
+    content: "";
+    opacity: 0;
+    transform: rotate(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .comparison-wrap {
+        scroll-behavior: auto;
+    }
+}

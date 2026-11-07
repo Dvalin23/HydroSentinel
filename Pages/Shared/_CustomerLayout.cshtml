@@ -1,0 +1,39 @@
+@using HydroSentinel.Services
+@inject IFormTestingMode FormTestingMode
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HydroSentinel customer portal" />
+    <title>@ViewData["Title"] - HydroSentinel Portal</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/customer-design-tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/customer-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/customer-pages.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/quality-upgrade.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/css/customer-container-shapes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/customer-dashboard-premium.css" asp-append-version="true" />
+</head>
+<body class="customer-body">
+    @if (FormTestingMode.Enabled)
+    {
+        <div class="test-mode-banner" role="status">@FormTestingMode.BannerText</div>
+    }
+    <a class="customer-skip-link" href="#portal-main">Skip to portal content</a>
+    <div class="customer-app" data-customer-app>
+        <div class="customer-overlay" data-customer-overlay hidden></div>
+        @await Html.PartialAsync("_CustomerSidebar")
+        <div class="customer-workspace">
+            @await Html.PartialAsync("_CustomerHeader")
+            <main id="portal-main" class="customer-main" tabindex="-1">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <div class="customer-toast-region" aria-live="polite" aria-atomic="true"></div>
+    <script src="~/js/customer-navigation.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

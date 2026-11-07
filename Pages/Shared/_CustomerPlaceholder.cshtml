@@ -1,0 +1,15 @@
+<section class="customer-page-intro">
+    <div><p class="customer-eyebrow">Integration boundary</p><h2>@ViewData["PortalHeading"]</h2><p class="customer-lede">@ViewData["PortalDescription"]</p></div>
+    <span class="customer-status-badge customer-status-neutral"><span></span>Not connected yet</span>
+</section>
+<section class="customer-placeholder-grid" aria-label="Feature status">
+    <div class="customer-panel customer-placeholder-panel">
+        <div class="customer-placeholder-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" /><circle cx="12" cy="12" r="3" /></svg></div>
+        <div><h3>Ready for the next integration stage</h3><p>This screen is routed and styled, but it does not display live account, pump, telemetry, payment, or support data.</p><p class="customer-note">No backend service is configured in the current project.</p></div>
+    </div>
+    <aside class="customer-panel customer-next-panel"><p class="customer-eyebrow">What you can do now</p><h3>Continue with Firmlon</h3><p>Use the public product and contact pages while the customer services are being connected.</p><div class="customer-action-row"><a class="customer-button customer-button-primary" asp-page="/Contact">Contact Firmlon <span aria-hidden="true">&rarr;</span></a><a class="customer-button customer-button-secondary" asp-page="/Customer/Help">Help Centre</a></div></aside>
+</section>
+<section class="customer-component-preview" aria-labelledby="states-title">
+    <div class="customer-section-heading"><div><p class="customer-eyebrow">Shared state patterns</p><h3 id="states-title">Designed for honest system feedback</h3></div><p>Loading, empty, error, offline, stale and access-denied states will attach to verified service responses.</p></div>
+    <div class="customer-state-list"><div><span class="customer-state-dot is-loading"></span><strong>Loading</strong><small>Waiting for a server response</small></div><div><span class="customer-state-dot is-empty"></span><strong>Empty</strong><small>No connected records yet</small></div><div><span class="customer-state-dot is-error"></span><strong>Error</strong><small>Retry or contact support</small></div></div>
+</section>

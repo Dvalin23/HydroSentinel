@@ -1,0 +1,34 @@
+@using HydroSentinel.Services
+@inject IDemoMode DemoMode
+@{
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    string Active(string page) => currentPage.Equals(page, StringComparison.OrdinalIgnoreCase) ? "is-active" : "";
+}
+<aside id="customer-sidebar" class="customer-sidebar" data-customer-sidebar aria-label="Customer portal navigation">
+    <div class="customer-sidebar-top">
+        <a class="customer-portal-brand" asp-page="/Customer" aria-label="HydroSentinel portal dashboard">
+            <img src="~/images/logo.jpeg" alt="Firmlon Smart Solutions Ltd." />
+            <span><strong>HydroSentinel</strong><small>Customer portal</small></span>
+        </a>
+        <button class="customer-collapse-button" type="button" data-customer-collapse aria-label="Collapse sidebar" aria-pressed="false">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
+    </div>
+    <nav class="customer-nav" aria-label="Portal sections">
+        <p class="customer-nav-label">Overview</p>
+        <a class="customer-nav-link @Active("/Customer/Index")" asp-page="/Customer/Index"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 13 8-8 8 8" /><path d="M6 11v8h5v-5h2v5h5v-8" /></svg><span>Dashboard</span></a>
+        <p class="customer-nav-label">Operations</p>
+        <a class="customer-nav-link @Active("/Customer/Devices/Index")" asp-page="/Customer/Devices/Index"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 7h6M9 17h6" /></svg><span>My Devices</span></a>
+        <a class="customer-nav-link @Active("/Customer/Monitoring/Index")" asp-page="/Customer/Monitoring/Index"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 18V6M4 18h16" /><path d="m7 14 3-4 3 2 4-6" /></svg><span>Monitoring</span></a>
+        <a class="customer-nav-link @Active("/Customer/Alerts/Index")" asp-page="/Customer/Alerts/Index"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg><span>Alerts</span></a>
+        <p class="customer-nav-label">Account</p>
+        <a class="customer-nav-link @Active("/Customer/Subscription/Index")" asp-page="/Customer/Subscription/Index"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18M7 15h3" /></svg><span>Subscription</span></a>
+        <a class="customer-nav-link @Active("/Customer/Payments/History")" asp-page="/Customer/Payments/History"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18v12H3z" /><path d="M3 10h18M7 15h4" /></svg><span>Payments</span></a>
+        <a class="customer-nav-link @Active("/Customer/Support/Index")" asp-page="/Customer/Support/Index"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z" /><path d="M8 9h8M8 12h5" /></svg><span>Support</span></a>
+        <p class="customer-nav-label">Preferences</p>
+        <a class="customer-nav-link @Active("/Customer/Notifications")" asp-page="/Customer/Notifications"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg><span>Notifications</span></a>
+        <a class="customer-nav-link @Active("/Customer/Settings/Profile")" asp-page="/Customer/Settings/Profile"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3" /><path d="M5 20a7 7 0 0 1 14 0" /></svg><span>Profile &amp; Settings</span></a>
+        <a class="customer-nav-link @Active("/Customer/Help")" asp-page="/Customer/Help"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M9.7 9a2.4 2.4 0 1 1 3.9 1.9c-1.1.8-1.6 1.2-1.6 2.6M12 17h.01" /></svg><span>Help Centre</span></a>
+    </nav>
+    <div class="customer-sidebar-footer">@if (DemoMode.Enabled) { <a asp-page="/Demo">Demo controls <span aria-hidden="true">&rarr;</span></a><small>Development sample account</small> } else { <a asp-page="/Contact">Contact Firmlon <span aria-hidden="true">&rarr;</span></a><small>Customer portal</small> }</div>
+</aside>

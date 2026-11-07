@@ -1,0 +1,23 @@
+@using HydroSentinel.Services
+@inject IDemoMode DemoMode
+@{
+    var title = ViewData["Title"]?.ToString() ?? "Customer portal";
+}
+<header class="customer-header">
+    <div class="customer-header-inner">
+        <button class="customer-mobile-toggle" type="button" data-customer-menu aria-expanded="false" aria-controls="customer-sidebar" aria-label="Open portal navigation"><span></span><span></span><span></span></button>
+        <div class="customer-context"><p class="customer-breadcrumb"><a asp-page="/Customer">Portal</a><span aria-hidden="true">/</span>@title</p><h1>@title</h1></div>
+        @if (DemoMode.Enabled)
+        {
+            <div class="customer-demo-disclosure" role="status"><span class="customer-demo-dot" aria-hidden="true"></span><span><strong>Demo data</strong><small>Temporary and simulated</small></span><a asp-page="/Demo">Controls</a><form method="post" asp-page="/Demo" asp-page-handler="Reset"><button type="submit">Reset</button></form></div>
+        }
+        <div class="customer-header-actions">
+            @if (DemoMode.Enabled)
+            {
+                <a class="customer-demo-chip" asp-page="/Demo" title="Open Development demo controls"><span aria-hidden="true"></span><span>Demo data</span></a>
+            }
+            <a class="customer-icon-button" asp-page="/Customer/Notifications" aria-label="Open notifications" title="Notifications"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg></a>
+            <details class="customer-account-menu"><summary class="customer-account-trigger"><span class="customer-avatar">@(DemoMode.Enabled ? "A" : "F")</span><span class="customer-account-copy"><strong>@(DemoMode.Enabled ? "Ada Demo Customer" : "Portal access")</strong><small>@(DemoMode.Enabled ? "Development demo" : "Authentication required")</small></span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></summary><div class="customer-account-popover"><p>@(DemoMode.Enabled ? "Fictional demo account. Changes are temporary and server-memory only." : "Signed in.")</p>@if (DemoMode.Enabled) { <a class="customer-button customer-button-secondary" asp-page="/Demo">Demo controls</a> } else if (User.Identity?.IsAuthenticated == true) { <p>@User.Identity.Name</p><form method="post" asp-page="/Login" asp-page-handler="Logout"><button class="customer-button customer-button-secondary" type="submit">Sign out</button></form> } else { <a class="customer-button customer-button-secondary" asp-page="/Login">Open Login</a> }</div></details>
+        </div>
+    </div>
+</header>

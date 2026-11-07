@@ -1,0 +1,17 @@
+@page
+@model HydroSentinel.Pages.Admin.AdminPageModel
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Admin access"; ViewData["AdminLogin"] = true; }
+
+<section class="admin-login-shell" aria-labelledby="admin-login-title">
+    <div class="admin-login-visual"><img class="admin-login-photo" src="~/images/Smart Water System Installation.png" alt="Smart water system installation equipment" /><div class="admin-login-visual-content"><a class="admin-login-brand" asp-page="/Admin/Login"><img src="~/images/logo.jpeg" alt="Firmlon HydroSentinel" /><span><b>HydroSentinel</b><small>Operations console</small></span></a><div><p class="admin-login-kicker">Water intelligence, clearly operated.</p><h1>Keep every<br /><span>signal</span> in view.</h1><p>One secure workspace for the teams that keep water systems dependable.</p></div><small class="admin-login-caption">Firmlon Smart Solutions Ltd. · Admin workspace</small></div><div class="admin-login-grid" aria-hidden="true"></div></div>
+    <div class="admin-login-panel"><div class="admin-login-form"><p class="admin-page-kicker">Restricted workspace</p><h2 id="admin-login-title">Welcome back</h2><p class="admin-auth-lede">Sign in to review HydroSentinel operations, customers, devices, and support activity.</p>
+        <form method="post" asp-page-handler="SignIn" class="admin-form admin-login-fields">
+            <div asp-validation-summary="ModelOnly" class="admin-form-error" role="alert"></div>
+            <label asp-for="Input.Email"><span>Email address</span><input asp-for="Input.Email" autocomplete="email" placeholder="admin@firmlon.example" /><span asp-validation-for="Input.Email" class="admin-form-error"></span></label>
+            <label asp-for="Input.Password"><span>Password</span><input asp-for="Input.Password" autocomplete="current-password" placeholder="Enter at least 8 characters" /><span asp-validation-for="Input.Password" class="admin-form-error"></span></label>
+            <div class="admin-login-options"><label class="admin-check"><input asp-for="Input.RememberMe" /> <span>Remember me</span></label><a class="admin-link" asp-page="/Account/ForgotPassword">Forgot password?</a></div>
+            <button class="admin-button admin-button-primary admin-login-submit" type="submit">Sign in <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" /></svg></button>
+        </form>
+        <p class="admin-login-footnote">Administrator accounts only. Repeated failed attempts lock the account for 15 minutes.</p>
+    </div></div>
+</section>

@@ -1,0 +1,15 @@
+@page "/Demo"
+@model HydroSentinel.Pages.DemoModel
+@{ Layout = "_Layout"; ViewData["Title"] = "Development Demo"; }
+<main class="site-main demo-entry">
+    <section class="section-shell demo-entry-panel">
+        <p class="eyebrow">Development-only experience</p>
+        <h1>Explore HydroSentinel with fictional demo data.</h1>
+        <p class="lede">This demo account is temporary and isolated in server memory. It does not authenticate a real customer, contact hardware, send messages, or initiate payments.</p>
+        <div class="demo-entry-actions">
+            <a class="button button-primary" asp-page="/Customer/Index">Open customer demo</a>
+            <form method="post" asp-page-handler="Reset"><button class="button button-secondary" type="submit">Reset demo data</button></form>
+        </div>
+        @if (Model.Reset) { <p class="demo-confirmation" role="status">Demo data reset to the original sample account.</p> }
+    </section>
+</main>

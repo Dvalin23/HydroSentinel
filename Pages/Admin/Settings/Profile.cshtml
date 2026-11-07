@@ -1,0 +1,5 @@
+@page
+@model HydroSentinel.Pages.Admin.AdminPageModel
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Admin profile"; }
+<div class="admin-page-head"><div><p class="admin-page-kicker">Settings / profile</p><h1>Admin profile</h1><p>Identity-backed profile details will appear here after provider integration.</p></div><a class="admin-button admin-button-secondary" asp-page="/Admin/Settings">Back to settings</a></div>
+<div class="admin-state"><strong>Profile integration required</strong><p>This preview does not store admin names, emails, passwords, or roles. Connect the approved identity provider before enabling profile edits.</p><button class="admin-button admin-button-secondary" type="button" disabled>Edit profile unavailable</button></div>

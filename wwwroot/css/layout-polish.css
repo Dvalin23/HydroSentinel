@@ -1,0 +1,179 @@
+/* Shared layout refinement: natural heights, common rhythm, and safe fluid grids. */
+.section-shell,
+.content-shell { width: min(var(--shell), calc(100% - (var(--gutter) * 2))); margin-inline: auto; }
+
+.product-page,
+.how-page,
+.pricing-page,
+.about-page,
+.contact-page { min-width: 0; }
+
+.product-hero-grid,
+.how-hero-grid,
+.pricing-hero-grid,
+.about-hero-grid,
+.contact-hero-grid { min-height: 0; }
+
+.product-hero-copy,
+.how-hero-copy,
+.pricing-hero-copy,
+.about-hero-copy,
+.contact-hero-copy { min-width: 0; }
+
+.product-hero-media,
+.how-hero-media,
+.pricing-hero-media,
+.about-hero-media,
+.contact-hero-media { min-width: 0; }
+
+.product-feature-grid,
+.benefit-grid,
+.about-values-grid,
+.plan-grid,
+.contact-grid { align-items: stretch; }
+
+.product-feature-card,
+.how-benefit-card,
+.about-value-card,
+.plan-card,
+.contact-info-panel,
+.contact-form-panel { min-width: 0; }
+
+.product-feature-card,
+.how-benefit-card,
+.about-value-card { height: 100%; }
+
+.product-hero-grid { padding-block: clamp(58px, 7vw, 90px); }
+.product-hero-copy { padding: 0; }
+.product-features,
+.product-overview,
+.product-help,
+.how-section,
+.process-section,
+.system-section,
+.benefit-section,
+.about-overview,
+.about-values,
+.about-mission,
+.about-engineering,
+.contact-workspace,
+.plan-section,
+.comparison-section,
+.faq-section { padding-block: var(--section-space); }
+
+.product-specs { padding-block: var(--section-space-tight); }
+.product-feature-card,
+.process-card,
+.plan-card { min-height: 0; }
+.process-card { height: 100%; }
+.process-image-wrap { aspect-ratio: 16 / 9; }
+.how-hero-grid { padding-block: clamp(58px, 7vw, 82px); }
+.how-hero-copy { padding: 0; }
+.how-hero-media { min-height: 0; padding: 0; }
+.how-hero-image-wrap { min-height: 0; aspect-ratio: 1.4 / 1; }
+.how-hero-image-wrap img { min-height: 0; }
+
+.pricing-hero-grid,
+.about-hero-grid,
+.contact-hero-grid { padding-block: clamp(58px, 7vw, 82px); }
+.pricing-hero-copy,
+.about-hero-copy,
+.contact-hero-copy { padding: 0; }
+.plan-card { height: 100%; }
+.plan-audience { min-height: 0; }
+.pricing-cta,
+.contact-final-inner,
+.about-final-inner,
+.how-final-inner,
+.final-cta-inner { min-width: 0; }
+
+.comparison-wrap { max-width: 100%; }
+.faq-list,
+.contact-form-panel,
+.contact-info-panel { min-width: 0; }
+.contact-field input,
+.contact-field select,
+.contact-field textarea { max-width: 100%; }
+
+@media (max-width: 1100px) {
+    .product-hero-grid,
+    .how-hero-grid,
+    .pricing-hero-grid,
+    .about-hero-grid,
+    .contact-hero-grid { gap: 34px; }
+
+    .product-feature-grid,
+    .benefit-grid,
+    .about-values-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .contact-grid { grid-template-columns: minmax(220px, .72fr) minmax(0, 1.28fr); }
+}
+
+@media (max-width: 760px) {
+    .section-shell,
+    .content-shell { width: min(100% - 32px, 720px); }
+
+    .product-hero-grid,
+    .how-hero-grid,
+    .pricing-hero-grid,
+    .about-hero-grid,
+    .contact-hero-grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding-block: 0; }
+
+    .product-hero-copy,
+    .how-hero-copy,
+    .pricing-hero-copy,
+    .about-hero-copy,
+    .contact-hero-copy { padding: 58px 0 22px; }
+
+    .product-hero-media,
+    .how-hero-media,
+    .pricing-hero-media,
+    .about-hero-media,
+    .contact-hero-media { padding: 18px 0 55px; }
+
+    .product-feature-grid,
+    .benefit-grid,
+    .about-values-grid,
+    .plan-grid,
+    .contact-grid { grid-template-columns: 1fr; }
+
+    .product-features,
+    .product-overview,
+    .product-specs,
+    .product-help,
+    .process-section,
+    .system-section,
+    .benefit-section,
+    .about-overview,
+    .about-values,
+    .about-mission,
+    .about-engineering,
+    .contact-workspace,
+    .plan-section,
+    .comparison-section,
+    .faq-section { padding-block: var(--section-space-tight); }
+
+    .contact-grid { gap: 16px; }
+    .pricing-cta,
+    .contact-final-inner,
+    .about-final-inner,
+    .how-final-inner,
+    .final-cta-inner { align-items: flex-start; flex-direction: column; }
+    .pricing-cta .button,
+    .contact-final-actions,
+    .about-final-inner .button,
+    .how-final-actions,
+    .product-final-cta .product-actions { width: 100%; margin-left: 0; }
+    .pricing-cta .button,
+    .contact-final-actions .button,
+    .about-final-inner .button,
+    .how-final-actions .button,
+    .product-final-cta .button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .product-page *,
+    .pricing-page *,
+    .about-page *,
+    .contact-page * { transition-duration: .01ms !important; }
+}

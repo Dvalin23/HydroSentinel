@@ -1,0 +1,26 @@
+@using HydroSentinel.Services
+@inject IAdminPortalProjection AdminPortal
+@{ var current = ViewContext.RouteData.Values["page"]?.ToString() ?? ""; string Active(string page) => current.Equals(page, StringComparison.OrdinalIgnoreCase) ? "is-active" : ""; }
+<aside id="admin-sidebar" class="admin-sidebar" data-admin-sidebar aria-label="Admin navigation">
+    <div class="admin-brand"><a asp-page="/Admin/Dashboard" aria-label="HydroSentinel admin dashboard"><img src="~/images/logo.jpeg" alt="" /><span><b>HydroSentinel</b><small>Operations console</small></span></a><button class="admin-close" type="button" data-admin-close aria-label="Close navigation"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
+    <div class="admin-workspace-chip"><span class="admin-chip-mark">HS</span><span><b>Firmlon Smart Solutions</b><small>@(AdminPortal.IsDevelopmentDemo ? "Development projection" : "Awaiting backend")</small></span></div>
+    <nav class="admin-nav" aria-label="Admin sections">
+        <p>Workspace</p>
+        <a class="@Active("/Admin/Dashboard")" asp-page="/Admin/Dashboard"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 12 8-8 8 8M6 10v9h12v-9M10 19v-5h4v5" /></svg></span>Dashboard</a>
+        <a class="@Active("/Admin/Customers")" asp-page="/Admin/Customers"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" /><path d="M3 19a6 6 0 0 1 12 0M16 5.5a3 3 0 0 1 0 5.8M17 13a5 5 0 0 1 4 6" /></svg></span>Customers</a>
+        <a class="@Active("/Admin/Devices")" asp-page="/Admin/Devices"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2" /><path d="M9 7h6M9 17h6M9 12h.01" /></svg></span>Devices</a>
+        <p>Operations</p>
+        <a class="@Active("/Admin/Monitoring")" asp-page="/Admin/Monitoring"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 18V6M4 18h16M7 14l3-4 3 2 4-6" /></svg></span>Monitoring</a>
+        <a class="@Active("/Admin/Alerts")" asp-page="/Admin/Alerts"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 9 17H3L12 3Z" /><path d="M12 9v4M12 16h.01" /></svg></span>Alerts</a>
+        <a class="@Active("/Admin/Support")" asp-page="/Admin/Support"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4zM8 9h8M8 12h5" /></svg></span>Support <em>@AdminPortal.Snapshot.OpenTicketCount</em></a>
+        <p>Commercial</p>
+        <a class="@Active("/Admin/Subscriptions")" asp-page="/Admin/Subscriptions"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3 20 7 12 11 4 7l8-4ZM4 12l8 4 8-4M4 17l8 4 8-4" /></svg></span>Subscriptions</a>
+        <a class="@Active("/Admin/Payments")" asp-page="/Admin/Payments"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18M7 15h4" /></svg></span>Payments</a>
+        <a class="@Active("/Admin/Reports")" asp-page="/Admin/Reports"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 19V5h14v14H5ZM8 16v-3M12 16V9M16 16v-5" /></svg></span>Reports</a>
+        <p>System</p>
+        <a class="@Active("/Admin/Notifications")" asp-page="/Admin/Notifications"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg></span>Notifications</a>
+        <a class="@Active("/Admin/Settings")" asp-page="/Admin/Settings"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19 15.2a2 2 0 0 0 .4 2.2l.1.1-1.7 1.7-.1-.1a2 2 0 0 0-2.2-.4 2 2 0 0 0-1.2 1.8v.2h-2.4v-.2a2 2 0 0 0-1.2-1.8 2 2 0 0 0-2.2.4l-.1.1-1.7-1.7.1-.1a2 2 0 0 0 .4-2.2 2 2 0 0 0-1.8-1.2h-.2v-2.4h.2a2 2 0 0 0 1.8-1.2 2 2 0 0 0-.4-2.2l-.1-.1 1.7-1.7.1.1a2 2 0 0 0 2.2.4 2 2 0 0 0 1.2-1.8V4h2.4v.2a2 2 0 0 0 1.2 1.8 2 2 0 0 0 2.2-.4l.1-.1 1.7 1.7-.1.1a2 2 0 0 0-.4 2.2 2 2 0 0 0 1.8 1.2h.2v2.4h-.2a2 2 0 0 0-1.8 1.2Z" /></svg></span>Settings</a>
+        <a class="@Active("/Admin/Help")" asp-page="/Admin/Help"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M9.7 9a2.4 2.4 0 1 1 3.9 1.9c-1.1.8-1.6 1.2-1.6 2.6M12 17h.01" /></svg></span>Help centre</a>
+    </nav>
+    <div class="admin-sidebar-footer"><a asp-page="/Admin/Login"><span class="admin-nav-icon"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M21 4v16" /></svg></span>Admin access</a><small>Build a trusted water network.</small></div>
+</aside>

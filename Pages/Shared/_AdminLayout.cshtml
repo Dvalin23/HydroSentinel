@@ -1,0 +1,31 @@
+@using HydroSentinel.Services
+@inject IAdminPortalProjection AdminPortal
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HydroSentinel administrative operations portal" />
+    <title>@ViewData["Title"] · HydroSentinel Admin</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-body @(ViewData["AdminLogin"] is true ? "admin-login-body" : "")">
+    <a class="admin-skip-link" href="#admin-main">Skip to admin content</a>
+    <div class="admin-app" data-admin-app>
+        <div class="admin-overlay" data-admin-overlay hidden></div>
+        @if (ViewData["AdminLogin"] is not true) { @await Html.PartialAsync("_AdminSidebar") }
+        <div class="admin-workspace">
+            @if (ViewData["AdminLogin"] is not true) { <header class="admin-topbar">
+                <button class="admin-menu-toggle" type="button" data-admin-menu aria-controls="admin-sidebar" aria-expanded="false"><span class="icon-lines" aria-hidden="true"></span><span class="sr-only">Open navigation</span></button>
+                <div class="admin-breadcrumb"><span>HydroSentinel</span><span aria-hidden="true">/</span><strong>@ViewData["Title"]</strong></div>
+                <div class="admin-topbar-actions"><a class="admin-context-link" asp-page="/Admin/Customers">Directory</a><span class="admin-connection"><i></i> @(AdminPortal.IsDevelopmentDemo ? "Demo workspace" : "Integration required")</span><button class="admin-icon-button" type="button" aria-label="Open notifications" title="Notifications" onclick="location.href='/Admin/Notifications'"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg></button><span class="admin-user" title="Administrator preview">AD</span></div>
+            </header> }
+            <main id="admin-main" class="admin-main" tabindex="-1">@RenderBody()</main>
+        </div>
+    </div>
+    <script src="~/js/admin-navigation.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,52 @@
+@using HydroSentinel.Services
+@inject IFormTestingMode FormTestingMode
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HydroSentinel account access from Firmlon Smart Solutions Ltd." />
+    <title>@ViewData["Title"] - Firmlon HydroSentinel</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/quality-upgrade.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+    @if (FormTestingMode.Enabled)
+    {
+        <div class="test-mode-banner" role="status">@FormTestingMode.BannerText</div>
+    }
+    <main class="auth-shell">
+        <header class="auth-header shell">
+            <a class="auth-brand" asp-page="/Index" aria-label="Return to Firmlon HydroSentinel home">
+                <img src="~/images/logo.jpeg" alt="Firmlon Smart Solutions Ltd." width="1536" height="1024" />
+            </a>
+            @if (Context.Request.Path.StartsWithSegments("/GetStarted"))
+            {
+                <span class="auth-back-link">Already have an account? <a asp-page="/Login">Login</a></span>
+            }
+            else
+            {
+                <a class="auth-back-link" asp-page="/Index"><span aria-hidden="true">&larr;</span> Back to website</a>
+            }
+        </header>
+        @RenderBody()
+        <footer class="auth-footer">
+            <div class="shell auth-footer-inner">
+                <a class="auth-footer-brand" asp-page="/Index" aria-label="Firmlon Smart Solutions Ltd. home">
+                    <img src="~/images/logo.jpeg" alt="Firmlon Smart Solutions Ltd." width="1536" height="1024" />
+                </a>
+                <nav class="auth-footer-nav" aria-label="Public website">
+                    <a asp-page="/Index">Home</a>
+                    <a asp-page="/Product">Product</a>
+                    <a asp-page="/HowItWorks">How It Works</a>
+                    <a asp-page="/Pricing">Pricing</a>
+                    <a asp-page="/About">About</a>
+                    <a asp-page="/Contact">Contact</a>
+                </nav>
+                <small>&copy; @DateTime.Now.Year Firmlon Smart Solutions Ltd. All rights reserved.</small>
+            </div>
+        </footer>
+    </main>
+</body>
+</html>

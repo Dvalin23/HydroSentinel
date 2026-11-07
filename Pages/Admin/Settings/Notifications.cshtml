@@ -1,0 +1,5 @@
+@page
+@model HydroSentinel.Pages.Admin.AdminPageModel
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Admin notifications"; }
+<div class="admin-page-head"><div><p class="admin-page-kicker">Settings / notifications</p><h1>Notifications</h1><p>Delivery preferences will be connected to approved messaging services.</p></div><a class="admin-button admin-button-secondary" asp-page="/Admin/Settings">Back to settings</a></div>
+<div class="admin-card"><div class="admin-detail-list"><div><span>Alert routing</span><b>Integration required</b></div><div><span>Email delivery</span><b>Not connected</b></div><div><span>SMS / push delivery</span><b>Not connected</b></div></div><div class="admin-notice" style="margin-top:18px">No notification is sent by this route. Preferences remain unavailable until recipient scope, consent, and delivery contracts exist.</div></div>

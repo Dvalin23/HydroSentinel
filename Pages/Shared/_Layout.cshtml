@@ -1,0 +1,53 @@
+@using HydroSentinel.Services
+@inject IFormTestingMode FormTestingMode
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HydroSentinel by Firmlon &mdash; smarter water pump control for homes, businesses, and facilities." />
+    <title>@ViewData["Title"] - HydroSentinel</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/css/layout-polish.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive-audit.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/page-redesign.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/quality-upgrade.css" asp-append-version="true" />
+</head>
+<body>
+    @if (FormTestingMode.Enabled)
+    {
+        <div class="test-mode-banner" role="status">@FormTestingMode.BannerText</div>
+    }
+    <header class="site-header">
+        <div class="shell header-inner">
+            <a class="brand" asp-page="/Index" aria-label="Firmlon HydroSentinel home"><img src="~/images/logo.jpeg" alt="Firmlon Smart Solutions Ltd." width="1536" height="1024" /></a>
+            <button class="menu-toggle" type="button" aria-label="Toggle primary navigation" aria-controls="primary-navigation" aria-expanded="false"><span></span><span></span><span></span><span class="sr-only">Open navigation</span></button>
+            <nav id="primary-navigation" class="primary-navigation" aria-label="Primary navigation">
+                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" ? "is-active" : "")" href="/#home">Home</a><a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Product" ? "is-active" : "")" asp-page="/Product">Product</a><a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/HowItWorks" ? "is-active" : "")" asp-page="/HowItWorks">How It Works</a><a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Pricing" ? "is-active" : "")" asp-page="/Pricing">Pricing</a><a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/About" ? "is-active" : "")" asp-page="/About">About</a><a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Contact" ? "is-active" : "")" asp-page="/Contact">Contact</a>
+                <span class="nav-actions"><a class="button button-small button-outline" asp-page="/Login">Login</a><a class="button button-small button-primary" asp-page="/GetStarted">Get Started <span aria-hidden="true">&rarr;</span></a></span>
+            </nav>
+        </div>
+    </header>
+    <main role="main">@RenderBody()</main>
+    <footer id="contact" class="site-footer">
+        <div class="shell footer-grid">
+            <div class="footer-intro">
+                <a class="brand footer-brand" asp-page="/Index" aria-label="Firmlon HydroSentinel home"><img src="~/images/logo.jpeg" alt="Firmlon Smart Solutions Ltd." width="1536" height="1024" loading="lazy" /></a>
+                <p>Practical smart-water technology from Firmlon Smart Solutions Ltd.</p>
+            </div>
+            <nav class="footer-column" aria-label="Public pages">
+                <h2>Explore</h2>
+                <div class="footer-links"><a href="/#home">Home</a><a asp-page="/About">About</a><a asp-page="/Contact">Contact</a></div>
+            </nav>
+            <nav class="footer-column" aria-label="Product pages">
+                <h2>HydroSentinel</h2>
+                <div class="footer-links"><a asp-page="/Product">Product</a><a asp-page="/HowItWorks">How It Works</a><a asp-page="/Pricing">Pricing</a></div>
+            </nav>
+            <div class="footer-meta"><a asp-page="/Contact" class="footer-email">Contact Firmlon</a><span>&copy; @DateTime.Now.Year Firmlon Smart Solutions Ltd. All rights reserved.</span></div>
+        </div>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

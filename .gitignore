@@ -1,0 +1,14 @@
+.data-protection/development-keys/
+
+# Generated .NET build output
+bin/
+obj/
+
+# Generated Codex/agent briefs, evaluations, screenshots, and build artifacts
+.codex/
+artifacts/
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
