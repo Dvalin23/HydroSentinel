@@ -1,8 +1,10 @@
 # Backend setup (C#)
 
-This adds the first real backend to the Razor Pages shell: accounts, devices, device check-in, subscriptions,
-Paystack payments, monitoring data, alerts, and admin controls. **It has not been compiled or run** by its author
-(no .NET SDK was available). Run `dotnet build` and the checks below before relying on it.
+The repository contains the backend for accounts, devices, device check-in, subscriptions, Paystack payments,
+monitoring data, alerts, and admin controls. The customer portal is wired to persisted, customer-scoped data.
+`dotnet build --no-restore` succeeds with zero warnings and errors. NuGet's transitive dependency audit reports
+no vulnerable packages after the dependency update. Runtime behavior has not been exercised as part of this
+documentation update.
 
 ## What exists
 
@@ -86,9 +88,11 @@ Public: `POST /api/paystack/webhook` (HMAC-SHA512 signature), `GET /pay/callback
 - A subscription lasts 30 days per paid month, with a 3-day grace period; first device assignment starts a 7-day trial.
   These numbers are placeholders for product to confirm (checklist section C).
 
-## Not done
+## Not done / confirm before production
 
-Support tickets, notifications, profile/security settings and attachments are still the existing disabled shells.
-Customer dashboard, device, monitoring, alerts, subscription and history **pages** still render their shells; the
-data is available from the JSON endpoints above and the pages need binding to it. Email confirmation, password reset
-email, SMS/email alerts, a background job that raises "went offline" events, and the Admin pages' data binding are also open.
+- Support tickets, notification persistence/preferences, profile updates, password changes/reset email, approved help articles, and attachments remain unavailable or validation-only shells.
+- Customer dashboard, device, monitoring, alerts, subscription, plan, and payment-history pages are bound to the persisted customer data. Admin API endpoints exist, but the Admin pages still need their data binding reviewed.
+- Email confirmation is not required yet because no email sender is configured. SMS/email alert delivery is not implemented.
+- There is no background job that raises `went_offline` events; freshness is derived when data is read.
+- Production needs EF migrations, a production database and secret store, persistent protected Data Protection keys, deployment/monitoring/backups, and a clean verification pass.
+- Product must confirm catalogue terms and lifecycle values. Remote locking remains disabled pending firmware safety work and approval.
