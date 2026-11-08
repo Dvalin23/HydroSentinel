@@ -1,26 +1,144 @@
 @page
 @model HydroSentinel.Pages.Customer.Devices.DetailsModel
-@{ Layout = "_CustomerLayout"; ViewData["Title"] = "Device Details"; var device = Model.Device; }
-
-@section Styles {
-    <link rel="stylesheet" href="~/css/customer-devices.css" asp-append-version="true" />
+@using HydroSentinel.Backend
+@using HydroSentinel.Services
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "Device Details";
+    var device = Model.Device;
 }
-
+@section Styles { <link rel="stylesheet" href="~/css/customer-devices.css" asp-append-version="true" /> }
 <div class="device-page">
+    @if (Model.Message is not null)
+    {
+        <div class="stage7-test-confirmation" role="status">@Model.Message</div>
+    }
     <section class="device-page-heading device-detail-heading" aria-labelledby="details-title">
-        <div><p class="customer-eyebrow">Device workspace</p><h2 id="details-title">Device Details</h2><p class="customer-lede">Overview, monitoring, history and supported settings will appear after an authorized device response.</p></div>
-        <div class="customer-action-row"><a class="customer-button customer-button-secondary" asp-page="/Customer/Devices/Index">Back to My Devices</a><span class="device-unavailable-badge"><span></span>Connection unavailable</span></div>
+        <div>
+            <p class="customer-eyebrow">Device workspace</p>
+            <h2 id="details-title">@device.Name</h2>
+            <p class="customer-lede">Latest reported state, event history and the readings this controller has sent.</p>
+        </div>
+        <div class="customer-action-row">
+            <a class="customer-button customer-button-secondary" asp-page="/Customer/Devices/Index">Back to My Devices</a>
+            <span class="device-unavailable-badge" data-state="@device.Status">@BillingRules.FreshnessText(device.Status)</span>
+        </div>
     </section>
+
     <section class="device-identity-panel" aria-labelledby="identity-title">
         <div class="device-identity-visual"><img src="~/images/Smart Water System Installation.png" alt="HydroSentinel controller installation context" loading="lazy" /></div>
-        <div class="device-identity-copy"><p class="customer-eyebrow">DEMO DEVICE · Selected device</p><h3 id="identity-title">@(device?.Name ?? "Device record unavailable")</h3><p>@(device is null ? "Choose a demo device from My Devices." : "This is fictional device data generated for Development Demo Mode.")</p><div class="device-identity-meta"><span><strong>Model</strong><em>@(device?.Model ?? "Unavailable")</em></span><span><strong>Identifier</strong><em>@(device?.Serial ?? "Unavailable")</em></span><span><strong>Location</strong><em>@(device?.Location ?? "Unavailable")</em></span><span><strong>Last seen</strong><em>@(device?.LastSeen.LocalDateTime.ToString("g") ?? "Unavailable")</em></span></div></div>
+        <div class="device-identity-copy">
+            <p class="customer-eyebrow">SELECTED DEVICE</p>
+            <h3 id="identity-title">@device.Name</h3>
+            <p>@(device.LastSeenAt is null ? "This controller has not checked in yet." : $"Last check-in {device.LastSeenAt.Value.LocalDateTime:g} UTC.")</p>
+            <div class="device-identity-meta">
+                <span><strong>Serial</strong><em>@device.Serial</em></span>
+                <span><strong>Status</strong><em>@BillingRules.FreshnessText(device.Status)</em></span>
+                <span><strong>Subscription</strong><em>@CustomerPortal.StateLabel(device.SubscriptionState)</em></span>
+                <span><strong>Pump lock</strong><em>@(device.PumpLocked is null ? "Not reported" : device.PumpLocked == true ? "Locked" : "Unlocked")</em></span>
+            </div>
+        </div>
     </section>
-    <nav class="device-tabs" aria-label="Device detail sections"><a class="is-active" href="#device-overview" aria-current="page">Overview</a><a asp-page="/Customer/Monitoring/Index">Monitoring</a><a href="#device-history">History</a><a href="#device-settings">Settings</a></nav>
+
+    <nav class="device-tabs" aria-label="Device detail sections">
+        <a class="is-active" href="#device-overview" aria-current="page">Overview</a>
+        <a asp-page="/Customer/Monitoring" asp-route-deviceId="@device.Id">Monitoring</a>
+        <a href="#device-history">History</a>
+    </nav>
+
     <section id="device-overview" class="device-detail-grid" aria-labelledby="overview-title">
-        <article class="device-detail-panel"><div class="device-section-heading"><div><p class="customer-eyebrow">Overview · illustrative</p><h3 id="overview-title">System information</h3></div></div><div class="device-data-list"><div><span>Water level</span><strong>@(device?.WaterLevel)%</strong></div><div><span>Water pressure</span><strong>@(device?.Pressure.ToString("0.0")) bar</strong></div><div><span>Pump status</span><strong>@(device?.PumpStatus)</strong></div><div><span>Signal strength</span><strong>@(device?.Signal)</strong></div><div><span>Battery</span><strong>@(device?.Battery)</strong></div><div><span>Data freshness</span><strong>Demo generated</strong></div></div><p class="device-state-callout">DEMONSTRATION ONLY — no live telemetry or hardware command is available.</p></article>
-        <article class="device-detail-panel"><div class="device-section-heading"><div><p class="customer-eyebrow">Attention</p><h3>Related alerts</h3></div><a class="dashboard-text-link" asp-page="/Customer/Alerts/Index">View alerts <span aria-hidden="true">&rarr;</span></a></div><div class="device-inline-empty"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01" /><circle cx="12" cy="12" r="9" /></svg><div><strong>Alert data unavailable</strong><p>We cannot determine whether this device has alerts until alert services are connected.</p></div></div></article>
+        <article class="device-detail-panel">
+            <div class="device-section-heading"><div><p class="customer-eyebrow">Latest check-in</p><h3 id="overview-title">System information</h3></div></div>
+            <div class="device-data-list">
+                <div><span>Water level</span><strong>@(device.LevelPercent is null ? CustomerPortal.LevelLabel(device.TankLevel) : $"{device.LevelPercent}%")</strong></div>
+                <div><span>Water pressure</span><strong>@CustomerPortal.PressureLabel(device.PressureBar)</strong></div>
+                <div><span>Pump status</span><strong>@(device.PumpOn is null ? "Unknown" : device.PumpOn == true ? "Running" : "Stopped")</strong></div>
+                <div><span>Mains power</span><strong>@(device.MainsOn is null ? "Unknown" : device.MainsOn == true ? "Present" : "Lost")</strong></div>
+                <div><span>Signal strength</span><strong>@(device.SignalCsq is null ? "Not reported" : $"CSQ {device.SignalCsq}")</strong></div>
+                <div><span>Battery</span><strong>@(device.BatteryPercent is null ? "Not reported" : $"{device.BatteryPercent}%")</strong></div>
+                <div><span>Fault code</span><strong>@(device.FaultCode is null or 0 ? "None" : device.FaultCode.ToString())</strong></div>
+                <div><span>Data freshness</span><strong>@BillingRules.FreshnessText(device.Status)</strong></div>
+            </div>
+            <p class="device-state-callout">Readings come from the controller's last check-in. Values it does not measure stay blank rather than defaulting to zero.</p>
+        </article>
+
+        <article class="device-detail-panel">
+            <div class="device-section-heading"><div><p class="customer-eyebrow">Attention</p><h3>Related alerts</h3></div><a class="dashboard-text-link" asp-page="/Customer/Alerts/Index">View alerts <span aria-hidden="true">&rarr;</span></a></div>
+            @if (Model.Alerts.Count == 0)
+            {
+                <div class="device-inline-empty"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01" /><circle cx="12" cy="12" r="9" /></svg><div><strong>No open alerts</strong><p>This controller has not reported a warning or fault.</p></div></div>
+            }
+            else
+            {
+                <div class="dashboard-alert-list">
+                    @foreach (var alert in Model.Alerts)
+                    {
+                        <a class="dashboard-alert-row" asp-page="/Customer/Alerts/Details" asp-route-id="@alert.Id">
+                            <span class="alert-severity alert-severity-@alert.Severity" aria-hidden="true"></span>
+                            <span><strong>@alert.TypeLabel</strong><small>@(alert.Detail ?? alert.At.LocalDateTime.ToString("g"))</small></span>
+                            <time datetime="@alert.At.ToString("O")">@alert.At.LocalDateTime.ToString("g")</time>
+                            <span class="dashboard-row-arrow" aria-hidden="true">&rarr;</span>
+                        </a>
+                    }
+                </div>
+            }
+        </article>
     </section>
-    <section id="device-history" class="device-detail-panel device-tab-state"><p class="customer-eyebrow">History</p><h3>Historical readings are not connected</h3><p>Historical water-level, pressure and pump events will appear here only when a real device service returns timestamped readings.</p><a class="customer-button customer-button-secondary" asp-page="/Customer/Monitoring/Index">Open Monitoring</a></section>
-    <section id="device-settings" class="device-detail-panel device-tab-state"><p class="customer-eyebrow">Settings</p><h3>Device settings are unavailable</h3><p>No remote control or device-setting operation is enabled. This page does not expose pump start/stop controls.</p><a class="customer-button customer-button-secondary" asp-page="/Customer/Help">Read Help Centre</a></section>
-    <details class="device-state-reference"><summary><span><span class="customer-eyebrow">Integration-ready states</span><strong>View detail response patterns</strong></span><small>Implementation guidance · collapsed by default</small></summary><div class="device-state-disclosure"><p class="device-state-disclosure-note">These examples are reserved for a future service response and are not simultaneous customer results.</p><div class="device-state-grid"><article><span class="device-state-label is-offline">Offline</span><strong>Device is offline</strong><p>Show the last verified timestamp and support guidance.</p></article><article><span class="device-state-label is-stale">Stale</span><strong>Data may be stale</strong><p>Show freshness metadata before displaying readings.</p></article><article><span class="device-state-label is-denied">Access denied</span><strong>Access is restricted</strong><p>Do not reveal device details without authorization.</p></article><article><span class="device-state-label is-error">Request error</span><strong>Could not load details</strong><p>Offer a retry only after a real request failure.</p></article></div></div></details>
+
+    <section id="device-history" class="device-detail-panel">
+        <div class="device-section-heading"><div><p class="customer-eyebrow">History</p><h3>Recent readings</h3></div><a class="dashboard-text-link" asp-page="/Customer/Monitoring" asp-route-deviceId="@device.Id">Full monitoring <span aria-hidden="true">&rarr;</span></a></div>
+        @if (Model.Readings.Count == 0)
+        {
+            <p class="device-state-callout">No readings in the last 7 days.</p>
+        }
+        else
+        {
+            <div class="device-table-wrap">
+                <table>
+                    <thead><tr><th>Time</th><th>Level</th><th>Pressure</th><th>Pump</th><th>Mains</th><th>Battery</th><th>Signal</th></tr></thead>
+                    <tbody>
+                        @foreach (var r in Model.Readings)
+                        {
+                            <tr>
+                                <td>@r.At.LocalDateTime.ToString("g")</td>
+                                <td>@(r.LevelPercent is null ? CustomerPortal.LevelLabel(r.TankLevel) : $"{r.LevelPercent}%")</td>
+                                <td>@(r.PressureBar is null ? "—" : $"{r.PressureBar:0.0} bar")</td>
+                                <td>@(r.PumpOn ? "Running" : "Stopped")</td>
+                                <td>@(r.MainsOn ? "Present" : "Lost")</td>
+                                <td>@(r.BatteryPercent is null ? "—" : $"{r.BatteryPercent}%")</td>
+                                <td>@(r.SignalCsq is null ? "—" : $"CSQ {r.SignalCsq}")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="device-detail-panel">
+        <div class="device-section-heading"><div><p class="customer-eyebrow">Events</p><h3>What the controller reported</h3></div></div>
+        @if (Model.Events.Count == 0)
+        {
+            <p class="device-state-callout">No events recorded yet.</p>
+        }
+        else
+        {
+            <div class="device-table-wrap">
+                <table>
+                    <thead><tr><th>Type</th><th>Severity</th><th>Detail</th><th>When</th></tr></thead>
+                    <tbody>
+                        @foreach (var e in Model.Events)
+                        {
+                            <tr>
+                                <td>@e.TypeLabel</td>
+                                <td>@e.Severity</td>
+                                <td>@(e.Detail ?? "—")</td>
+                                <td>@e.At.LocalDateTime.ToString("g")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
 </div>

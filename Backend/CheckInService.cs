@@ -4,13 +4,17 @@ using Microsoft.Extensions.Options;
 
 namespace HydroSentinel.Backend;
 
-public sealed record CheckInInput(string Serial, string Key, string? Water, bool Pump, bool Mains, int Fault, bool DeviceLock, int? Battery, int? Signal);
+public sealed record CheckInInput(string Serial, string Key, string? Water, bool Pump, bool Mains, int Fault, bool DeviceLock, int? Battery, int? Signal, int? LevelPercent = null, int? PressureCentiBar = null);
 public sealed record CheckInResult(bool Authenticated, bool Lock);
 
 /// <summary>Handles one controller check-in: authenticate, store, diff into events, and answer with the lock state.</summary>
 public sealed class CheckInService(AppDbContext db, IOptions<FeatureOptions> features)
 {
     private static string? LevelOf(string? w) => w?.ToUpperInvariant() switch { "L" => "low", "M" => "mid", "F" => "full", _ => null };
+
+    // Percent and centibar are sent as integers so the SIM800L never has to format a float.
+    private static int? PercentOf(int? v) => v is >= 0 and <= 100 ? v : null;
+    private static decimal? BarOf(int? centibar) => centibar is >= 0 and <= 2000 ? centibar.Value / 100m : null;
 
     public async Task<CheckInResult> HandleAsync(CheckInInput i, CancellationToken ct)
     {
@@ -21,6 +25,9 @@ public sealed class CheckInService(AppDbContext db, IOptions<FeatureOptions> fea
 
         var level = LevelOf(i.Water);
         if (level is null) return new CheckInResult(false, false); // malformed -> treated as bad request by caller
+
+        var percent = PercentOf(i.LevelPercent);
+        var pressure = BarOf(i.PressureCentiBar);
 
         var wasOffline = BillingRules.IsOffline(device, now);
         var hadSeen = device.LastSeenAt is not null;
@@ -54,6 +61,8 @@ public sealed class CheckInService(AppDbContext db, IOptions<FeatureOptions> fea
 
         device.LastSeenAt = now;
         device.TankLevel = level;
+        device.LevelPercent = percent;
+        device.PressureBar = pressure;
         device.PumpOn = i.Pump;
         device.MainsOn = i.Mains;
         device.FaultCode = i.Fault;
@@ -63,7 +72,8 @@ public sealed class CheckInService(AppDbContext db, IOptions<FeatureOptions> fea
 
         db.Readings.Add(new Reading
         {
-            DeviceId = device.Id, At = now, TankLevel = level, PumpOn = i.Pump, MainsOn = i.Mains,
+            DeviceId = device.Id, At = now, TankLevel = level, LevelPercent = percent, PressureBar = pressure,
+            PumpOn = i.Pump, MainsOn = i.Mains,
             FaultCode = i.Fault, BatteryPercent = i.Battery, SignalCsq = i.Signal
         });
         db.DeviceEvents.AddRange(events);

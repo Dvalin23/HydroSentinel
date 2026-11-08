@@ -1,7 +1,62 @@
 @page
 @model HydroSentinel.Pages.Customer.Subscription.IndexModel
+@using HydroSentinel.Backend
 @using HydroSentinel.Services
-@inject PlanCatalog Catalog
-@{ Layout = "_CustomerLayout"; ViewData["Title"] = "Subscription"; var s = Model.Data.Subscription; }
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "Subscription";
+    var s = Model.Subscription;
+    var tone = s.State switch
+    {
+        SubscriptionState.Active => "billing-state-success",
+        SubscriptionState.Grace => "billing-state-warning",
+        _ => "billing-state-unavailable"
+    };
+}
 @section Styles { <link rel="stylesheet" href="~/css/customer-subscriptions-payments.css" asp-append-version="true" /> }
-<section class="billing-page"><div class="billing-intro"><div><p class="customer-eyebrow">DEMO BILLING</p><h2>Your subscription</h2><p class="customer-lede">This fictional subscription is available for exploring the portal flow.</p></div><span class="billing-state billing-state-success"><i></i>Demo active</span></div><div class="billing-grid billing-grid-overview"><article class="billing-panel billing-plan-panel"><div class="billing-panel-heading"><div><p class="billing-kicker">Current plan · demonstration</p><h3>@s.PlanName plan</h3></div><span class="billing-icon billing-icon-green">₦</span></div><p class="billing-muted">Status: @s.Status · @s.BillingInterval · covered devices: @s.CoveredDevices</p><dl class="billing-detail-list"><div><dt>Started</dt><dd>@s.Started.LocalDateTime.ToString("d")</dd></div><div><dt>Next billing</dt><dd>@s.NextBilling.LocalDateTime.ToString("d")</dd></div><div><dt>Data label</dt><dd>DEMO ONLY</dd></div></dl><div class="billing-actions"><a class="customer-button customer-button-secondary" asp-page="/Customer/Subscription/Plans">Compare plans</a><a class="customer-button customer-button-primary" asp-page="/Customer/Payments/History">Payment history</a></div></article><aside class="billing-panel billing-next-panel"><p class="billing-kicker">Temporary demo state</p><h3>No real renewal is scheduled.</h3><p class="billing-muted">The page uses approved flyer figures for demonstration and never contacts Paystack.</p></aside></div><div class="billing-link-row"><a asp-page="/Customer/Payments/History">Payment history &rarr;</a><a asp-page="/Customer/Support">Ask about billing &rarr;</a></div></section>
+<section class="billing-page">
+    <div class="billing-intro">
+        <div>
+            <p class="customer-eyebrow">BILLING</p>
+            <h2>Your subscription</h2>
+            <p class="customer-lede">Service runs while a plan is active. Expired plans enter a 3-day grace period before the pump lock rule can apply.</p>
+        </div>
+        <span class="billing-state @tone"><i></i>@CustomerPortal.StateLabel(s.State)</span>
+    </div>
+
+    <div class="billing-grid billing-grid-overview">
+        <article class="billing-panel billing-plan-panel">
+            <div class="billing-panel-heading">
+                <div><p class="billing-kicker">Current plan</p><h3>@(Model.CurrentPlan?.Name ?? s.PlanName ?? "No plan")</h3></div>
+                <span class="billing-icon billing-icon-green">&#9679;</span>
+            </div>
+            @if (!s.Exists)
+            {
+                <p class="billing-muted">No plan is attached to this account yet. Claiming your first device starts a 7-day Basic trial.</p>
+            }
+            else
+            {
+                <p class="billing-muted">@CustomerPortal.StateLabel(s.State)@(s.IsTrial == true ? " · trial" : "") · @(Model.CurrentPlan?.DeviceAllowance ?? "device allowance on your plan")</p>
+                <dl class="billing-detail-list">
+                    <div><dt>Paid until</dt><dd>@(s.PaidUntil?.LocalDateTime.ToString("d") ?? "—")</dd></div>
+                    <div><dt>Grace ends</dt><dd>@(s.GraceEndsAt?.LocalDateTime.ToString("d") ?? "—")</dd></div>
+                    <div><dt>Monthly fee</dt><dd>@(Model.CurrentPlan is null ? "—" : $"₦{Model.CurrentPlan.MonthlyPrice:N0}")</dd></div>
+                </dl>
+            }
+            <div class="billing-actions">
+                <a class="customer-button customer-button-secondary" asp-page="/Customer/Subscription/Plans">Compare plans</a>
+                <a class="customer-button customer-button-primary" asp-page="/Customer/Payments/History">Payment history</a>
+            </div>
+        </article>
+        <aside class="billing-panel billing-next-panel">
+            <p class="billing-kicker">How activation works</p>
+            <h3>Payments are verified before anything changes.</h3>
+            <p class="billing-muted">Checkout redirects to Paystack. The subscription only extends after the server verifies the payment reference or receives a signed webhook.</p>
+        </aside>
+    </div>
+
+    <div class="billing-link-row">
+        <a asp-page="/Customer/Payments/History">Payment history &rarr;</a>
+        <a asp-page="/Customer/Support/Index">Ask about billing &rarr;</a>
+    </div>
+</section>

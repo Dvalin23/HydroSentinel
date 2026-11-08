@@ -61,7 +61,8 @@ public static class Endpoints
             static int? Int(string v) => int.TryParse(v, out var n) ? n : null;
 
             var input = new CheckInInput(id, k, w, Flag(q["p"].ToString()), Flag(q["m"].ToString()),
-                Int(q["f"].ToString()) ?? 0, Flag(q["lk"].ToString()), Int(q["b"].ToString()), Int(q["s"].ToString()));
+                Int(q["f"].ToString()) ?? 0, Flag(q["lk"].ToString()), Int(q["b"].ToString()), Int(q["s"].ToString()),
+                Int(q["pc"].ToString()), Int(q["pr"].ToString()));
 
             var result = await svc.HandleAsync(input, ct);
             if (!result.Authenticated)
@@ -149,6 +150,20 @@ public static class Endpoints
             return Results.Ok(ToDto(d, sub, DateTimeOffset.UtcNow));
         });
 
+        // Self-claim: serial + the one-time key printed on the unit. Binds an unowned device to this account.
+        g.MapPost("/devices/claim", async (ClaimDeviceRequest req, ClaimsPrincipal user, DeviceClaimService claims, HttpContext http, CancellationToken ct) =>
+        {
+            var r = await claims.ClaimAsync(UserId(user), req.Serial, req.Key, ct);
+            return r.Outcome switch
+            {
+                ClaimOutcome.Invalid => Problem(http, 422, "invalid_claim", "Enter the serial number and the device key."),
+                ClaimOutcome.Rejected => Problem(http, 404, "claim_rejected", "That serial number and device key do not match."),
+                ClaimOutcome.Conflict => Problem(http, 409, "device_already_claimed", "That unit is already registered to another account. Contact support if you believe this is wrong."),
+                ClaimOutcome.AlreadyOwned => Results.Ok(new { id = r.Device!.Id, name = r.Device.Name, alreadyOwned = true }),
+                _ => Results.Ok(new { id = r.Device!.Id, name = r.Device.Name, alreadyOwned = false })
+            };
+        }).RequireAntiforgery();
+
         g.MapGet("/devices/{id:guid}/readings", async (Guid id, DateTimeOffset? from, DateTimeOffset? to, int? limit,
             ClaimsPrincipal user, AppDbContext db, HttpContext http, CancellationToken ct) =>
         {
@@ -173,7 +188,8 @@ public static class Endpoints
                 freshness = new { state = BillingRules.Freshness(d, now), lastUpdatedAt = d.LastSeenAt },
                 points = points.Select(r => new
                 {
-                    timestamp = r.At, tankLevel = r.TankLevel, pumpOn = r.PumpOn, mainsOn = r.MainsOn,
+                    timestamp = r.At, tankLevel = r.TankLevel, levelPercent = r.LevelPercent, pressureBar = r.PressureBar,
+                    pumpOn = r.PumpOn, mainsOn = r.MainsOn,
                     faultCode = r.FaultCode, batteryPercent = r.BatteryPercent, signalCsq = r.SignalCsq
                 })
             });
@@ -289,7 +305,8 @@ public static class Endpoints
             serialMasked = d.Serial.Length <= 4 ? "****" : new string('*', d.Serial.Length - 4) + d.Serial[^4..],
             status = BillingRules.Freshness(d, now),
             lastSeenAt = d.LastSeenAt,
-            tankLevel = d.TankLevel, pumpOn = d.PumpOn, mainsOn = d.MainsOn, faultCode = d.FaultCode,
+            tankLevel = d.TankLevel, levelPercent = d.LevelPercent, pressureBar = d.PressureBar,
+            pumpOn = d.PumpOn, mainsOn = d.MainsOn, faultCode = d.FaultCode,
             batteryPercent = d.BatteryPercent, signalCsq = d.SignalCsq,
             pumpLocked = d.ReportedLock, // what the unit itself last reported
             subscriptionStatus = state.ToString().ToLowerInvariant()
@@ -370,8 +387,7 @@ public static class Endpoints
             if (!await users.IsInRoleAsync(owner, Roles.Customer)) return Problem(http, 422, "not_a_customer", "That account is not a customer.");
 
             d.OwnerId = owner.Id;
-            if (!await db.Subscriptions.AnyAsync(s => s.UserId == owner.Id, ct))
-                db.Subscriptions.Add(new Subscription { UserId = owner.Id, PlanId = "basic", IsTrial = true, PaidUntil = DateTimeOffset.UtcNow + BillingRules.TrialLength });
+            await db.EnsureTrialAsync(owner.Id, ct);
             await db.SaveChangesAsync(ct);
             await audit.WriteAsync(UserId(user), "device.assign", d.Id.ToString(), owner.Email, ct);
             return Results.Ok(new { id = d.Id, ownerEmail = owner.Email });
@@ -427,5 +443,6 @@ public static class Endpoints
 
 public sealed record CheckoutRequest(string? PlanId, int Months, string? IdempotencyKey);
 public sealed record RegisterDeviceRequest(string? Serial, string? Name);
+public sealed record ClaimDeviceRequest(string? Serial, string? Key);
 public sealed record AssignRequest(string? Email);
 public sealed record LockRequest(bool Locked, string? Reason);

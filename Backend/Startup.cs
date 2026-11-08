@@ -83,6 +83,8 @@ public static class Startup
         services.AddHttpContextAccessor();
         services.AddScoped<AuditService>();
         services.AddScoped<CheckInService>();
+        services.AddScoped<DeviceClaimService>();
+        services.AddScoped<CustomerPortal>();
         services.AddScoped<PaymentService>();
         services.AddHttpClient<PaystackClient>(c => c.Timeout = TimeSpan.FromSeconds(15));
     }

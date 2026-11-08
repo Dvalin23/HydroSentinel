@@ -1,10 +1,72 @@
 @page
 @model HydroSentinel.Pages.Customer.Subscription.PlansModel
-@{ Layout = "_CustomerLayout"; ViewData["Title"] = "Plans"; }
+@using HydroSentinel.Services
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "Plans";
+    var currency = "₦";
+}
 @section Styles { <link rel="stylesheet" href="~/css/customer-subscriptions-payments.css" asp-append-version="true" /> }
-<section class="billing-page" aria-labelledby="plans-heading"><div class="billing-intro"><div><p class="customer-eyebrow">Plan selection</p><h2 id="plans-heading">Choose the right level of support</h2><p class="customer-lede">Review the flyer-supplied starting figures while the trusted backend catalog is being prepared.</p></div><span class="billing-state billing-state-unavailable"><i></i>Checkout unavailable</span></div>
-<div class="catalog-notice" role="status"><span class="billing-notice-icon" aria-hidden="true">i</span><div><strong>Flyer-supplied figures — commercial confirmation required.</strong><p>@Model.OfferNote No payment can be initiated from this preview.</p></div></div>
-<div class="plan-grid" aria-label="Flyer-supplied plan comparison">@foreach (var plan in Model.Plans) { <article class="plan-card @(plan.Id == "pro" ? "plan-featured" : "")"><div class="plan-card-top"><div><p class="billing-kicker">Plan</p><h3>@plan.Name</h3></div>@if (plan.Id == "pro") { <span class="plan-label">Most considered</span> }</div><p class="billing-muted">@plan.Description</p><div class="plan-price"><strong>₦@plan.HardwarePrice.ToString("N0")</strong><span>one-time setup · + ₦@plan.MonthlyPrice.ToString("N0")/month</span></div><ul class="plan-features"><li>@plan.DeviceAllowance</li><li>DEMO MODE · no real charge</li><li>Approved flyer figures</li></ul><a class="customer-button customer-button-secondary" asp-page="/Customer/Payments/Checkout" asp-route-plan="@plan.Id">Review demo checkout</a></article> }</div>
-<p id="catalog-help" class="billing-help">Demo checkout validates the interface only. It never initiates Paystack or activates a real subscription.</p>
-<section class="billing-comparison billing-panel" aria-labelledby="comparison-heading"><div class="customer-section-heading"><div><p class="billing-kicker">Compare before you commit</p><h3 id="comparison-heading">Flyer-supplied figures</h3></div><p>These values are display context only; checkout must use trusted server pricing.</p></div><div class="comparison-table-wrap"><table class="comparison-table"><caption class="visually-hidden">Flyer-supplied HydroSentinel plan pricing</caption><thead><tr><th scope="col">Plan detail</th>@foreach (var plan in Model.Plans) { <th scope="col">@plan.Name</th> }</tr></thead><tbody><tr><th scope="row">One-time setup</th>@foreach (var plan in Model.Plans) { <td>₦@plan.HardwarePrice.ToString("N0")</td> }</tr><tr><th scope="row">Monthly subscription</th>@foreach (var plan in Model.Plans) { <td>₦@plan.MonthlyPrice.ToString("N0")</td> }</tr><tr><th scope="row">Device allowance</th>@foreach (var plan in Model.Plans) { <td>@plan.DeviceAllowance</td> }</tr></tbody></table></div></section>
-<div class="billing-bottom-cta"><div><h3>Need help choosing?</h3><p>Talk to Firmlon about your installation before the catalog is connected.</p></div><a class="customer-button customer-button-primary" asp-page="/Contact">Contact Firmlon <span aria-hidden="true">&rarr;</span></a></div></section>
+<section class="billing-page" aria-labelledby="plans-heading">
+    <div class="billing-intro">
+        <div>
+            <p class="customer-eyebrow">Plan selection</p>
+            <h2 id="plans-heading">Choose the right level of support</h2>
+            <p class="customer-lede">Hardware is sold separately. Checkout charges the monthly service fee only, priced on the server.</p>
+        </div>
+        @if (Model.CheckoutReady)
+        {
+            <span class="billing-state billing-state-success"><i></i>Checkout ready</span>
+        }
+        else
+        {
+            <span class="billing-state billing-state-warning"><i></i>Payments not configured</span>
+        }
+    </div>
+
+    @if (!Model.CheckoutReady)
+    {
+        <div class="catalog-notice" role="status">
+            <span class="billing-notice-icon" aria-hidden="true">i</span>
+            <div><strong>Paystack keys are not set in this environment.</strong><p>Plans and prices are real, but starting a checkout will return a configuration error until <code>Paystack:SecretKey</code> is provided.</p></div>
+        </div>
+    }
+
+    <div class="plan-grid" aria-label="Plan comparison">
+        @foreach (var plan in Model.Plans)
+        {
+            <article class="plan-card @(plan.Id == "pro" ? "plan-featured" : "")">
+                <div class="plan-card-top"><div><p class="billing-kicker">Plan</p><h3>@plan.Name</h3></div>@if (plan.Id == "pro") { <span class="plan-label">Most considered</span> }</div>
+                <p class="billing-muted">@plan.Description</p>
+                <div class="plan-price"><strong>@currency@plan.HardwarePrice.ToString("N0")</strong><span>one-time setup · + @currency@plan.MonthlyPrice.ToString("N0")/month</span></div>
+                <ul class="plan-features"><li>@plan.DeviceAllowance</li><li>Remote monitoring and alerts</li><li>Cancel by not renewing</li></ul>
+                <a class="customer-button customer-button-secondary" asp-page="/Customer/Payments/Checkout" asp-route-plan="@plan.Id">Subscribe</a>
+            </article>
+        }
+    </div>
+
+    <p id="catalog-help" class="billing-help">@Model.OfferNote</p>
+
+    <section class="billing-comparison billing-panel" aria-labelledby="comparison-heading">
+        <div class="customer-section-heading">
+            <div><p class="billing-kicker">Compare before you commit</p><h3 id="comparison-heading">Plan figures</h3></div>
+            <p>Amounts are charged in @PlanCatalog.Currency and recomputed on the server at checkout.</p>
+        </div>
+        <div class="comparison-table-wrap">
+            <table class="comparison-table">
+                <caption class="visually-hidden">HydroSentinel plan pricing</caption>
+                <thead><tr><th scope="col">Plan detail</th>@foreach (var plan in Model.Plans) { <th scope="col">@plan.Name</th> }</tr></thead>
+                <tbody>
+                    <tr><th scope="row">One-time setup</th>@foreach (var plan in Model.Plans) { <td>@currency@plan.HardwarePrice.ToString("N0")</td> }</tr>
+                    <tr><th scope="row">Monthly subscription</th>@foreach (var plan in Model.Plans) { <td>@currency@plan.MonthlyPrice.ToString("N0")</td> }</tr>
+                    <tr><th scope="row">Device allowance</th>@foreach (var plan in Model.Plans) { <td>@plan.DeviceAllowance</td> }</tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="billing-bottom-cta">
+        <div><h3>Need help choosing?</h3><p>Talk to Firmlon about your installation before subscribing.</p></div>
+        <a class="customer-button customer-button-primary" asp-page="/Contact">Contact Firmlon <span aria-hidden="true">&rarr;</span></a>
+    </div>
+</section>

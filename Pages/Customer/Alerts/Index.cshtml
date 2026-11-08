@@ -1,5 +1,83 @@
 @page
 @model HydroSentinel.Pages.Customer.Alerts.IndexModel
-@{ Layout = "_CustomerLayout"; ViewData["Title"] = "Alerts"; }
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "Alerts";
+}
 @section Styles { <link rel="stylesheet" href="~/css/customer-monitoring-alerts.css" asp-append-version="true" /> }
-<div class="alerts-page"><section class="alerts-intro"><div><p class="customer-eyebrow">DEMO INCIDENT CENTRE</p><h2>Alerts that help you respond with confidence.</h2><p class="customer-lede">Fictional alert records can be searched, filtered and acknowledged temporarily.</p></div><span class="customer-status-badge"><span></span>Demonstration only</span></section><form method="get" class="alerts-controls customer-panel"><div><label for="alert-search">Search</label><input id="alert-search" name="Search" value="@Model.Search" placeholder="Description or type" /></div><div><label for="alert-severity">Severity</label><select id="alert-severity" name="Severity"><option value="All">All severities</option><option>Warning</option><option>Info</option></select></div><div><label for="alert-status">Status</label><select id="alert-status" name="Status"><option value="All">All statuses</option><option>Open</option><option>Acknowledged</option></select></div><button class="customer-button customer-button-secondary" type="submit">Apply filters</button></form><section class="alerts-table-panel customer-panel"><div class="alerts-panel-heading"><div><p class="customer-eyebrow">Temporary records</p><h3>Alert history</h3></div><span class="alerts-count-note">@Model.Alerts.Count() results</span></div><div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Severity</th><th>Type</th><th>Device</th><th>Description</th><th>Occurred</th><th>Action</th></tr></thead><tbody>@foreach (var alert in Model.Alerts) { <tr><td>@alert.Severity</td><td>@alert.Title</td><td>@alert.DeviceId</td><td>@alert.Description</td><td>@alert.Occurred.LocalDateTime.ToString("g")</td><td><a class="customer-text-link" asp-page="/Customer/Alerts/Details" asp-route-id="@alert.Id">View</a>@if (alert.Status == "Open") { <form method="post" asp-page-handler="Acknowledge" style="display:inline"><input type="hidden" name="id" value="@alert.Id" /><button class="device-state-action" type="submit">Acknowledge</button></form> } else { <span>Acknowledged</span> }</td></tr> }</tbody></table></div></section></div>
+<div class="alerts-page">
+    <section class="alerts-intro">
+        <div>
+            <p class="customer-eyebrow">INCIDENT CENTRE</p>
+            <h2>Alerts from your controllers.</h2>
+            <p class="customer-lede">Warnings and faults raised by check-in changes. Acknowledge one once you have dealt with it.</p>
+        </div>
+        <span class="customer-status-badge"><span></span>Live events</span>
+    </section>
+
+    <form method="get" class="alerts-controls customer-panel">
+        <div><label for="alert-search">Search</label><input id="alert-search" name="Search" value="@Model.Search" placeholder="Type, device or detail" /></div>
+        <div>
+            <label for="alert-severity">Severity</label>
+            <select id="alert-severity" name="Severity">
+                <option value="All" selected="@(string.IsNullOrWhiteSpace(Model.Severity) || Model.Severity == "All")">All severities</option>
+                <option value="critical" selected="@(Model.Severity == "critical")">Critical</option>
+                <option value="warning" selected="@(Model.Severity == "warning")">Warning</option>
+            </select>
+        </div>
+        <div>
+            <label for="alert-status">Status</label>
+            <select id="alert-status" name="Status">
+                <option value="All" selected="@(string.IsNullOrWhiteSpace(Model.Status) || Model.Status == "All")">All statuses</option>
+                <option value="open" selected="@(Model.Status == "open")">Open</option>
+                <option value="acknowledged" selected="@(Model.Status == "acknowledged")">Acknowledged</option>
+            </select>
+        </div>
+        <button class="customer-button customer-button-secondary" type="submit">Apply filters</button>
+    </form>
+
+    <section class="alerts-table-panel customer-panel">
+        <div class="alerts-panel-heading">
+            <div><p class="customer-eyebrow">History</p><h3>Alert history</h3></div>
+            <span class="alerts-count-note">@Model.Alerts.Count results</span>
+        </div>
+        @if (Model.Alerts.Count == 0)
+        {
+            <div class="device-inline-empty"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01" /><circle cx="12" cy="12" r="9" /></svg><div><strong>Nothing to show</strong><p>No alerts match these filters.</p></div></div>
+        }
+        else
+        {
+            <div class="comparison-table-wrap">
+                <table class="comparison-table">
+                    <thead><tr><th>Severity</th><th>Type</th><th>Device</th><th>Detail</th><th>Occurred</th><th>Action</th></tr></thead>
+                    <tbody>
+                        @foreach (var alert in Model.Alerts)
+                        {
+                            <tr>
+                                <td><span class="alert-severity alert-severity-@alert.Severity" aria-hidden="true"></span>@alert.Severity</td>
+                                <td>@alert.TypeLabel</td>
+                                <td>@alert.DeviceName</td>
+                                <td>@(alert.Detail ?? "—")</td>
+                                <td>@alert.At.LocalDateTime.ToString("g")</td>
+                                <td>
+                                    <a class="customer-text-link" asp-page="/Customer/Alerts/Details" asp-route-id="@alert.Id">View</a>
+                                    @if (!alert.Acknowledged)
+                                    {
+                                        <form method="post" asp-page-handler="Acknowledge" style="display:inline">
+                                            <input type="hidden" name="id" value="@alert.Id" />
+                                            <button class="device-state-action" type="submit">Acknowledge</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span>Acknowledged</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>

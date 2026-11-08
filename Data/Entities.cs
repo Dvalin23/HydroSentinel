@@ -33,6 +33,10 @@ public class Device
     // Last known state, from the most recent check-in.
     public DateTimeOffset? LastSeenAt { get; set; }
     public string? TankLevel { get; set; }       // "low" | "mid" | "full"
+    /// <summary>Measured fill, 0-100%. Null when the unit does not report it.</summary>
+    public int? LevelPercent { get; set; }
+    /// <summary>Line pressure in bar. Null when the unit has no pressure sensor.</summary>
+    public decimal? PressureBar { get; set; }
     public bool? PumpOn { get; set; }
     public bool? MainsOn { get; set; }
     public int? FaultCode { get; set; }
@@ -50,6 +54,8 @@ public class Reading
     public Guid DeviceId { get; set; }
     public DateTimeOffset At { get; set; }
     public string TankLevel { get; set; } = "low";
+    public int? LevelPercent { get; set; }
+    public decimal? PressureBar { get; set; }
     public bool PumpOn { get; set; }
     public bool MainsOn { get; set; }
     public int FaultCode { get; set; }

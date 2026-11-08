@@ -1,29 +1,38 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using HydroSentinel.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HydroSentinel.Pages.Customer.Devices;
 
-public class DetailsModel(IDemoMode demo) : PageModel
+public class DetailsModel(CustomerPortal portal) : CustomerPageModel
 {
     [BindProperty(SupportsGet = true, Name = "id")]
     public string? DeviceId { get; set; }
 
-    public DeviceSelectionState SelectionState =>
-        string.IsNullOrWhiteSpace(DeviceId)
-            ? DeviceSelectionState.NoSelection
-            : DeviceId.Length > 128
-                ? DeviceSelectionState.InvalidRequest
-                : DeviceSelectionState.AwaitingIntegration;
+    [BindProperty(SupportsGet = true, Name = "claimed")]
+    public bool Claimed { get; set; }
 
-    public bool HasRequestedId => SelectionState != DeviceSelectionState.NoSelection;
-    public DemoSnapshot Data => demo.Snapshot;
-    public DemoDevice? Device => Data.Devices.FirstOrDefault(x => x.Id == DeviceId || x.Serial.Equals(DeviceId, StringComparison.OrdinalIgnoreCase));
-}
+    public string? Message => TempData["DeviceClaimed"] as string;
 
-public enum DeviceSelectionState
-{
-    NoSelection,
-    AwaitingIntegration,
-    InvalidRequest
+    public CustomerDeviceVm Device { get; private set; } = default!;
+    public IReadOnlyList<CustomerAlertVm> Alerts { get; private set; } = [];
+    public IReadOnlyList<CustomerAlertVm> Events { get; private set; } = [];
+    public IReadOnlyList<CustomerReadingVm> Readings { get; private set; } = [];
+
+    public async Task<IActionResult> OnGetAsync(CancellationToken ct)
+    {
+        var uid = UserId;
+        if (uid is null) return SignInRequired();
+
+        var id = RequestedDeviceId(DeviceId);
+        if (id is null) return RedirectToPage("/Customer/Devices/Index");
+
+        var device = await portal.DeviceAsync(uid, id.Value, ct);
+        if (device is null) return NotFound();
+
+        Device = device;
+        Alerts = await portal.AlertsForDeviceAsync(uid, id.Value, 5, ct);
+        Events = await portal.DeviceEventsAsync(uid, id.Value, 15, ct);
+        Readings = await portal.ReadingsAsync(uid, id.Value, DateTimeOffset.UtcNow.AddDays(-7), DateTimeOffset.UtcNow, 25, ct);
+        return Page();
+    }
 }

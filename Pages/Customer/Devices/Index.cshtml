@@ -1,11 +1,73 @@
 @page
 @model HydroSentinel.Pages.Customer.Devices.IndexModel
-@{ Layout = "_CustomerLayout"; ViewData["Title"] = "My Devices"; }
+@using HydroSentinel.Backend
+@using HydroSentinel.Services
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "My Devices";
+}
 @section Styles { <link rel="stylesheet" href="~/css/customer-devices.css" asp-append-version="true" /> }
 <div class="device-page">
- <section class="device-page-heading"><div><p class="customer-eyebrow">DEMO INVENTORY</p><h2>My Devices</h2><p class="customer-lede">Search and manage fictional controllers. No hardware ownership or connectivity is verified.</p></div><a class="customer-button customer-button-primary" asp-page="/Customer/Devices/Add">Add demo device</a></section>
- @if (Model.Message is not null) { <div class="stage7-test-confirmation" role="status">@Model.Message</div> }
- <form method="get" class="device-toolbar"><div><label for="device-search">Search devices</label><input id="device-search" name="Search" value="@Model.Search" placeholder="Name or serial" /></div><div><label for="device-status">Status</label><select id="device-status" name="Status"><option value="All">All statuses</option><option selected="@(Model.Status == "Online")">Online</option><option selected="@(Model.Status == "Offline")">Offline</option></select></div><button class="customer-button customer-button-secondary" type="submit">Filter</button></form>
- <section class="device-table-panel"><div class="device-section-heading"><div><p class="customer-eyebrow">Temporary demo records</p><h3>Registered controllers</h3></div><span class="device-count">@Model.Devices.Count() devices</span></div><div class="device-table-wrap"><table><thead><tr><th>Device</th><th>Model</th><th>Serial</th><th>Location</th><th>Status</th><th>Last seen</th><th>Actions</th></tr></thead><tbody>@foreach (var device in Model.Devices) { <tr><td><strong>@device.Name</strong></td><td>@device.Model</td><td>@device.Serial</td><td>@device.Location</td><td><span class="device-unavailable-badge">@device.Status</span></td><td>@device.LastSeen.LocalDateTime.ToString("g")</td><td><a class="customer-text-link" asp-page="/Customer/Devices/Details" asp-route-id="@device.Id">View</a> <form method="post" asp-page-handler="Remove" style="display:inline"><input type="hidden" name="id" value="@device.Id" /><button class="device-state-action" type="submit">Remove</button></form></td></tr> }</tbody></table></div></section>
- <aside class="device-help-band"><div><p class="customer-eyebrow">DEMONSTRATION ONLY</p><h3>These records live in temporary server memory.</h3><p>Reset Demo Data restores the original fictional account.</p></div><a class="customer-button customer-button-secondary" asp-page="/Demo">Demo controls</a></aside>
+    <section class="device-page-heading">
+        <div>
+            <p class="customer-eyebrow">MY INVENTORY</p>
+            <h2>My Devices</h2>
+            <p class="customer-lede">Every controller registered to your account, with the most recent check-in.</p>
+        </div>
+        <a class="customer-button customer-button-primary" asp-page="/Customer/Devices/Add">Add device</a>
+    </section>
+
+    <form method="get" class="device-toolbar">
+        <div><label for="device-search">Search devices</label><input id="device-search" name="Search" value="@Model.Search" placeholder="Name or serial" /></div>
+        <div>
+            <label for="device-status">Status</label>
+            <select id="device-status" name="Status">
+                <option value="All" selected="@(string.IsNullOrWhiteSpace(Model.Status) || Model.Status == "All")">All statuses</option>
+                <option value="live" selected="@(Model.Status == "live")">Online</option>
+                <option value="offline" selected="@(Model.Status == "offline")">Offline</option>
+                <option value="unknown" selected="@(Model.Status == "unknown")">Awaiting first check-in</option>
+            </select>
+        </div>
+        <button class="customer-button customer-button-secondary" type="submit">Filter</button>
+    </form>
+
+    <section class="device-table-panel">
+        <div class="device-section-heading">
+            <div><p class="customer-eyebrow">Registered controllers</p><h3>@(Model.Devices.Count == 1 ? "1 device" : $"{Model.Devices.Count} devices")</h3></div>
+        </div>
+        @if (Model.Devices.Count == 0)
+        {
+            <div class="device-inline-empty">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 7h6M9 17h6" /></svg>
+                <div><strong>No devices match</strong><p>Clear the filters, or claim a controller with its serial number and device key.</p><a class="customer-button customer-button-secondary" asp-page="/Customer/Devices/Add">Add device</a></div>
+            </div>
+        }
+        else
+        {
+            <div class="device-table-wrap">
+                <table>
+                    <thead><tr><th>Device</th><th>Serial</th><th>Status</th><th>Water level</th><th>Pump</th><th>Last seen</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        @foreach (var device in Model.Devices)
+                        {
+                            <tr>
+                                <td><strong>@device.Name</strong></td>
+                                <td>@device.SerialMasked</td>
+                                <td><span class="device-unavailable-badge" data-state="@device.Status">@BillingRules.FreshnessText(device.Status)</span></td>
+                                <td>@(device.LevelPercent is null ? CustomerPortal.LevelLabel(device.TankLevel) : $"{device.LevelPercent}%")</td>
+                                <td>@(device.PumpOn is null ? "Unknown" : device.PumpOn == true ? "Running" : "Stopped")</td>
+                                <td>@(device.LastSeenAt?.LocalDateTime.ToString("g") ?? "Never")</td>
+                                <td><a class="customer-text-link" asp-page="/Customer/Devices/Details" asp-route-id="@device.Id">View</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <aside class="device-help-band">
+        <div><p class="customer-eyebrow">NEED ANOTHER UNIT?</p><h3>Claim it with the key printed on the controller.</h3><p>Installation and first registration are handled by your installer; the unit appears here as soon as it is bound to your account.</p></div>
+        <a class="customer-button customer-button-secondary" asp-page="/Customer/Devices/Add">Add a device</a>
+    </aside>
 </div>

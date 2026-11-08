@@ -1,15 +1,25 @@
 using HydroSentinel.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HydroSentinel.Pages.Customer.Devices;
 
-public class IndexModel(IDemoMode demo) : PageModel
+public class IndexModel(CustomerPortal portal) : CustomerPageModel
 {
     [BindProperty(SupportsGet = true)] public string? Search { get; set; }
     [BindProperty(SupportsGet = true)] public string? Status { get; set; }
-    public DemoSnapshot Data => demo.Snapshot;
-    public string? Message { get; private set; }
-    public IEnumerable<DemoDevice> Devices => Data.Devices.Where(x => (string.IsNullOrWhiteSpace(Search) || x.Name.Contains(Search, StringComparison.OrdinalIgnoreCase) || x.Serial.Contains(Search, StringComparison.OrdinalIgnoreCase)) && (string.IsNullOrWhiteSpace(Status) || Status == "All" || x.Status.Equals(Status, StringComparison.OrdinalIgnoreCase)));
-    public IActionResult OnPostRemove(string id) { if (!demo.Enabled) return NotFound(); Message = demo.RemoveDevice(id) ? "Demo device removed. No hardware record was changed." : "That demo device could not be found."; return Page(); }
+
+    public IReadOnlyList<CustomerDeviceVm> Devices { get; private set; } = [];
+
+    public async Task<IActionResult> OnGetAsync(CancellationToken ct)
+    {
+        var uid = UserId;
+        if (uid is null) return SignInRequired();
+
+        var all = await portal.DevicesAsync(uid, ct);
+        Devices = all.Where(d =>
+            (string.IsNullOrWhiteSpace(Search) || d.Name.Contains(Search, StringComparison.OrdinalIgnoreCase) || d.Serial.Contains(Search, StringComparison.OrdinalIgnoreCase))
+            && (string.IsNullOrWhiteSpace(Status) || Status == "All" || d.Status.Equals(Status, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+        return Page();
+    }
 }

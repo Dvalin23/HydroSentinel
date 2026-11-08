@@ -1,5 +1,43 @@
 @page
 @model HydroSentinel.Pages.Customer.Devices.AddModel
-@{ Layout = "_CustomerLayout"; ViewData["Title"] = "Add Device"; }
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "Add Device";
+}
 @section Styles { <link rel="stylesheet" href="~/css/customer-devices.css" asp-append-version="true" /> }
-<div class="device-page"><section class="device-page-heading"><div><p class="customer-eyebrow">DEMO REGISTRATION</p><h2>Add a demo device</h2><p class="customer-lede">This demonstrates registration UX only. It does not scan QR codes, prove ownership, or contact a controller.</p></div><a class="customer-button customer-button-secondary" asp-page="/Customer/Devices">Back to My Devices</a></section><section class="device-form-panel"><div class="device-section-heading"><div><p class="customer-eyebrow">Temporary record</p><h3>Device details</h3></div></div>@if (Model.Message is not null) { <div class="stage7-test-confirmation" role="status">@Model.Message</div> }<form method="post" class="stage7-form"><div asp-validation-summary="ModelOnly" class="stage7-validation" role="alert"></div><div class="stage7-form-grid"><div class="stage7-field"><label asp-for="Input.Name"></label><input asp-for="Input.Name" placeholder="Garden tank controller" /><span asp-validation-for="Input.Name" class="stage7-validation"></span></div><div class="stage7-field"><label asp-for="Input.Serial"></label><input asp-for="Input.Serial" placeholder="HS-009999" /><span asp-validation-for="Input.Serial" class="stage7-validation"></span></div><div class="stage7-field stage7-field-full"><label asp-for="Input.Location"></label><input asp-for="Input.Location" placeholder="Demo installation" /><span asp-validation-for="Input.Location" class="stage7-validation"></span></div></div><p class="stage7-note">DEMONSTRATION ONLY — no device registration API or hardware communication is called.</p><button class="customer-button customer-button-primary" type="submit">Add temporary demo device</button></form></section></div>
+<div class="device-page">
+    <section class="device-page-heading">
+        <div>
+            <p class="customer-eyebrow">DEVICE REGISTRATION</p>
+            <h2>Add a device</h2>
+            <p class="customer-lede">Use the serial number printed on the controller and the device key issued during installation. The key proves the unit is yours and is never shown again.</p>
+        </div>
+        <a class="customer-button customer-button-secondary" asp-page="/Customer/Devices/Index">Back to My Devices</a>
+    </section>
+
+    <section class="device-form-panel">
+        <div class="device-section-heading"><div><p class="customer-eyebrow">Claim a unit</p><h3>Device details</h3></div></div>
+        <form method="post" class="stage7-form">
+            <div asp-validation-summary="ModelOnly" class="stage7-validation" role="alert"></div>
+            <div class="stage7-form-grid">
+                <div class="stage7-field">
+                    <label asp-for="Input.Serial"></label>
+                    <input asp-for="Input.Serial" placeholder="HS-000123" autocomplete="off" />
+                    <span asp-validation-for="Input.Serial" class="stage7-validation"></span>
+                </div>
+                <div class="stage7-field">
+                    <label asp-for="Input.Key"></label>
+                    <input asp-for="Input.Key" placeholder="32-character key" autocomplete="off" />
+                    <span asp-validation-for="Input.Key" class="stage7-validation"></span>
+                </div>
+            </div>
+            <p class="stage7-note">If the key is lost, contact support with your serial number. A unit can only belong to one account at a time.</p>
+            <button class="customer-button customer-button-primary" type="submit">Add device to my account</button>
+        </form>
+    </section>
+
+    <aside class="device-help-band">
+        <div><p class="customer-eyebrow">FIRST UNIT?</p><h3>Claiming starts your 7-day trial.</h3><p>The Basic plan trial begins the moment the first controller joins your account. You can change plans later.</p></div>
+        <a class="customer-button customer-button-secondary" asp-page="/Customer/Subscription/Plans">See plans</a>
+    </aside>
+</div>

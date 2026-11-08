@@ -1,27 +1,51 @@
 using System.ComponentModel.DataAnnotations;
-using HydroSentinel.Services;
+using HydroSentinel.Backend;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HydroSentinel.Pages.Customer.Devices;
 
-public class AddModel(IDemoMode demo) : PageModel
+/// <summary>Self-claim: the customer binds an unassigned unit with its serial and one-time device key.</summary>
+public class AddModel(DeviceClaimService claims) : CustomerPageModel
 {
     [BindProperty] public InputModel Input { get; set; } = new();
     public string? Message { get; private set; }
-    public IActionResult OnPost()
+
+    public IActionResult OnGet() => UserId is null ? SignInRequired() : Page();
+
+    public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
-        if (!demo.Enabled) return NotFound();
+        var uid = UserId;
+        if (uid is null) return SignInRequired();
         if (!ModelState.IsValid) return Page();
-        var device = demo.AddDevice(Input.Serial, Input.Name, Input.Location);
-        Message = device is null ? "That serial number is already in the demo account." : $"Demo device {device.Name} added. No ownership verification or hardware communication occurred.";
-        if (device is not null) Input = new();
-        return Page();
+
+        var result = await claims.ClaimAsync(uid, Input.Serial, Input.Key, ct);
+        switch (result.Outcome)
+        {
+            case ClaimOutcome.Invalid:
+                ModelState.AddModelError(string.Empty, "Enter the serial number and the device key from the controller.");
+                return Page();
+            case ClaimOutcome.Rejected:
+                ModelState.AddModelError(string.Empty, "That serial number and device key do not match.");
+                return Page();
+            case ClaimOutcome.Conflict:
+                ModelState.AddModelError(string.Empty, "That unit is already registered to another account. Contact support if you believe this is wrong.");
+                return Page();
+            default:
+                TempData["DeviceClaimed"] = result.Outcome == ClaimOutcome.AlreadyOwned
+                    ? "That device is already on your account."
+                    : $"Device {result.Device!.Name} added to your account.";
+                return RedirectToPage("/Customer/Devices/Details", new { id = result.Device!.Id, claimed = 1 });
+        }
     }
+
     public sealed class InputModel
     {
-        [Required, StringLength(40), RegularExpression("HS-[A-Za-z0-9-]+", ErrorMessage = "Use a demo identifier such as HS-009999.")] public string Serial { get; set; } = "";
-        [Required, StringLength(100)] public string Name { get; set; } = "";
-        [Required, StringLength(120)] public string Location { get; set; } = "";
+        [Required, StringLength(64, MinimumLength = 3)]
+        [Display(Name = "Serial number")]
+        public string Serial { get; set; } = "";
+
+        [Required, StringLength(128, MinimumLength = 8)]
+        [Display(Name = "Device key")]
+        public string Key { get; set; } = "";
     }
 }

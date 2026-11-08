@@ -61,6 +61,14 @@ public static class BillingRules
         return IsOffline(d, now) ? "offline" : "live";
     }
 
+    /// <summary>Customer-facing label for a Freshness() value.</summary>
+    public static string FreshnessText(string status) => status switch
+    {
+        "live" => "Online",
+        "offline" => "Offline",
+        _ => "Awaiting first check-in"
+    };
+
     /// <summary>Convert NGN to kobo without floating point.</summary>
     public static long ToMinor(decimal amount) => decimal.ToInt64(decimal.Round(amount * 100m, 0, MidpointRounding.AwayFromZero));
 }

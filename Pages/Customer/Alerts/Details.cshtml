@@ -1,5 +1,43 @@
 @page
 @model HydroSentinel.Pages.Customer.Alerts.DetailsModel
-@{ Layout = "_CustomerLayout"; ViewData["Title"] = "Alert Details"; }
+@{
+    Layout = "_CustomerLayout";
+    ViewData["Title"] = "Alert Details";
+    var alert = Model.Alert;
+}
 @section Styles { <link rel="stylesheet" href="~/css/customer-monitoring-alerts.css" asp-append-version="true" /> }
-<div class="alert-details-page"><div class="alert-details-back"><a class="dashboard-text-link" asp-page="/Customer/Alerts">&larr; Back to Alerts</a></div><section class="alert-details-intro"><div><p class="customer-eyebrow">DEMO ALERT · Demonstration only</p><h2>Review the sample incident.</h2><p class="customer-lede">This record is fictional and stored only in temporary Development memory.</p></div><span class="customer-status-badge"><span></span>@(Model.Alert?.Status ?? "Not found")</span></section>@if (Model.Alert is null) { <section class="alert-detail-state customer-panel"><h3>Demo alert not found</h3><p>Reset Demo Data to restore the original sample alerts.</p></section> } else { <section class="alert-detail-state customer-panel"><div><p class="customer-eyebrow">@Model.Alert.Severity · @Model.Alert.Occurred.LocalDateTime.ToString("g")</p><h3>@Model.Alert.Title</h3><p>@Model.Alert.Description</p><p>Related demo device: <strong>@Model.Alert.DeviceId</strong></p></div></section> }<section class="alert-details-actions"><a class="customer-button customer-button-secondary" asp-page="/Customer/Monitoring">Open Monitoring</a><a class="customer-button customer-button-primary" asp-page="/Customer/Alerts">Back to alerts</a></section></div>
+<div class="alert-details-page">
+    <div class="alert-details-back"><a class="dashboard-text-link" asp-page="/Customer/Alerts/Index">&larr; Back to Alerts</a></div>
+    <section class="alert-details-intro">
+        <div>
+            <p class="customer-eyebrow">@alert.Severity.ToUpperInvariant() · @alert.At.LocalDateTime.ToString("g")</p>
+            <h2>@alert.TypeLabel</h2>
+            <p class="customer-lede">Reported by @alert.DeviceName.</p>
+        </div>
+        <span class="customer-status-badge" data-state="@(alert.Acknowledged ? "live" : "offline")"><span></span>@(alert.Acknowledged ? "Acknowledged" : "Open")</span>
+    </section>
+
+    <section class="alert-detail-state customer-panel">
+        <div>
+            <p class="customer-eyebrow">What happened</p>
+            <h3>@alert.TypeLabel</h3>
+            <p>@(alert.Detail is null ? "The controller reported this change without extra detail." : alert.Detail)</p>
+            <p>Device: <strong><a asp-page="/Customer/Devices/Details" asp-route-id="@alert.DeviceId">@alert.DeviceName</a></strong> · Severity: <strong>@alert.Severity</strong></p>
+        </div>
+        @if (!alert.Acknowledged)
+        {
+            <form method="post" asp-page-handler="Acknowledge">
+                <button class="customer-button customer-button-primary" type="submit">Acknowledge alert</button>
+            </form>
+        }
+        else
+        {
+            <p class="device-state-callout">This alert was acknowledged. It stays in the history.</p>
+        }
+    </section>
+
+    <section class="alert-details-actions">
+        <a class="customer-button customer-button-secondary" asp-page="/Customer/Monitoring" asp-route-deviceId="@alert.DeviceId">Open Monitoring</a>
+        <a class="customer-button customer-button-primary" asp-page="/Customer/Alerts/Index">Back to alerts</a>
+    </section>
+</div>

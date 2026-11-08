@@ -59,15 +59,18 @@ command expiry and replay protection (checklist item E) are still to do on the f
 
 ## Device protocol
 
-`GET /api/device/checkin?id=<serial>&k=<device key>&w=<L|M|F>&p=<0|1>&m=<0|1>&f=<fault>&lk=<0|1>&b=<battery %>&s=<csq>`
+`GET /api/device/checkin?id=<serial>&k=<device key>&w=<L|M|F>&p=<0|1>&m=<0|1>&f=<fault>&lk=<0|1>&b=<battery %>&s=<csq>&pc=<fill %>&pr=<pressure centibar>`
 with header `X-Relay-Secret`. Reply `OK,<lock 0|1>,<unix time>` or `ERR`. On `ERR` the unit keeps its last state.
-The key is shown once when an admin registers the unit (`POST /api/admin/devices`); only its SHA-256 is stored.
+`pc` is measured fill 0-100 and `pr` is line pressure in hundredths of a bar (215 = 2.15 bar); both are optional so
+older firmware keeps working. Out-of-range values are stored as "not reported", never as zero.
+The key is shown once when an admin registers the unit (`POST /api/admin/devices`) or when a customer claims it
+(`POST /api/customer/devices/claim` with the serial and key); only its SHA-256 is stored.
 
 ## API summary
 
 Customer (cookie auth, role `Customer`; POSTs need the `RequestVerificationToken` header from `/api/customer/antiforgery`):
 `GET devices`, `devices/{id}`, `devices/{id}/readings`, `alerts`, `plans`, `subscription`, `payments`, `payments/{reference}`;
-`POST alerts/{id}/acknowledge`, `payments/checkout`.
+`POST devices/claim`, `alerts/{id}/acknowledge`, `payments/checkout`.
 
 Admin (role `Admin`, same antiforgery scheme): `GET devices`, `payments`, `subscriptions`, `audit`;
 `POST devices`, `devices/{id}/rotate-key`, `devices/{id}/assign`, `devices/{id}/lock`.
