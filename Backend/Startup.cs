@@ -17,6 +17,7 @@ public static class Startup
         services.Configure<DeviceOptions>(cfg.GetSection(DeviceOptions.Section));
         services.Configure<FeatureOptions>(cfg.GetSection(FeatureOptions.Section));
         services.Configure<SeedOptions>(cfg.GetSection(SeedOptions.Section));
+        services.Configure<EmailOptions>(cfg.GetSection(EmailOptions.Section));
 
         // Provider: "Sqlite" (default, dev) or "Postgres" (prod). Connection string: ConnectionStrings:Default
         var provider = cfg["Database:Provider"] ?? "Sqlite";
@@ -35,7 +36,7 @@ public static class Startup
             o.Lockout.MaxFailedAccessAttempts = 5;
             o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             o.Lockout.AllowedForNewUsers = true;
-            // TODO(product): enable once an email sender exists: o.SignIn.RequireConfirmedEmail = true;
+            o.SignIn.RequireConfirmedEmail = true;
         })
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
@@ -46,7 +47,11 @@ public static class Startup
             o.AccessDeniedPath = "/Login";
             o.Cookie.HttpOnly = true;
             o.Cookie.SameSite = SameSiteMode.Lax;
-            o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            // Local developers may run the HTTP launch profile without a dev certificate.
+            // Keep cookies secure in production; mirror the request scheme only in Development.
+            o.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
             o.ExpireTimeSpan = TimeSpan.FromHours(8);
             o.SlidingExpiration = true;
             // API callers get status codes, not redirects to an HTML login page.
@@ -66,7 +71,13 @@ public static class Startup
             .AddPolicy(Endpoints.AdminPolicy, p => p.RequireAuthenticatedUser().RequireRole(Roles.Admin))
             .AddPolicy(Endpoints.CustomerPolicy, p => p.RequireAuthenticatedUser().RequireRole(Roles.Customer));
 
-        services.AddAntiforgery(o => { o.HeaderName = "RequestVerificationToken"; o.Cookie.SecurePolicy = CookieSecurePolicy.Always; });
+        services.AddAntiforgery(o =>
+        {
+            o.HeaderName = "RequestVerificationToken";
+            o.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
+        });
 
         services.AddRateLimiter(o =>
         {
@@ -82,6 +93,9 @@ public static class Startup
 
         services.AddHttpContextAccessor();
         services.AddScoped<AuditService>();
+        services.AddScoped<AccountEmailSender>();
+        services.AddScoped<IEmailSender<ApplicationUser>>(sp => sp.GetRequiredService<AccountEmailSender>());
+        services.AddScoped<AccountEmailLinks>();
         services.AddScoped<CheckInService>();
         services.AddScoped<DeviceClaimService>();
         services.AddScoped<CustomerPortal>();

@@ -1,0 +1,17 @@
+@page
+@model HydroSentinel.Pages.Account.RegisterConfirmationModel
+@{ Layout = "_AuthLayout"; ViewData["Title"] = "Check your email"; }
+<section class="auth-main"><div class="shell"><div class="auth-panel">
+    <p class="auth-eyebrow">Almost there</p>
+    <h1>Check your email</h1>
+    @if (Model.DeliveryFailed)
+    {
+        <p role="alert">Your account was created, but we could not send the confirmation email. Try requesting another link or contact support.</p>
+    }
+    else
+    {
+        <p role="status">A confirmation link has been sent to the registered address. Confirm it before signing in.</p>
+    }
+    <p><a class="button button-primary auth-submit" asp-page="/Account/ResendConfirmation">Request another link</a></p>
+    <p class="auth-secondary"><a asp-page="/Login">Return to sign in</a></p>
+</div></div></section>

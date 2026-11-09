@@ -34,3 +34,28 @@ public sealed class SeedOptions
     public string AdminEmail { get; set; } = string.Empty;
     public string AdminPassword { get; set; } = string.Empty;
 }
+
+public sealed class EmailOptions
+{
+    public const string Section = "Email";
+    public string PublicBaseUrl { get; set; } = string.Empty;
+    public string SmtpHost { get; set; } = string.Empty;
+    public int SmtpPort { get; set; } = 587;
+    public string SmtpUsername { get; set; } = string.Empty;
+    public string SmtpPassword { get; set; } = string.Empty;
+    public string FromAddress { get; set; } = string.Empty;
+    public string FromName { get; set; } = "HydroSentinel";
+    public bool EnableSsl { get; set; } = true;
+
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(SmtpHost)
+        && !string.IsNullOrWhiteSpace(FromAddress)
+        && SmtpPort is >= 1 and <= 65535
+        && EnableSsl
+        && (string.IsNullOrEmpty(SmtpUsername) == string.IsNullOrEmpty(SmtpPassword))
+        && Uri.TryCreate(PublicBaseUrl, UriKind.Absolute, out var uri)
+        && uri.Scheme == Uri.UriSchemeHttps
+        && string.IsNullOrEmpty(uri.UserInfo)
+        && uri.AbsolutePath == "/"
+        && string.IsNullOrEmpty(uri.Query)
+        && string.IsNullOrEmpty(uri.Fragment);
+}

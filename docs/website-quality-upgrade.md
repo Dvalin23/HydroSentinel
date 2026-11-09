@@ -21,10 +21,8 @@ The flyer also shows “10% OFF + FIRST MONTH FREE” and “LAUNCHING: 15TH NOV
 
 ## Development form testing
 
-`IFormTestingMode` is registered in `Program.cs` and returns enabled only when `IWebHostEnvironment.IsDevelopment()` is true. The public, auth, and customer layouts show:
+`IFormTestingMode` is registered in `Program.cs` and returns enabled only when `IWebHostEnvironment.IsDevelopment()` is true. The public, auth, and customer layouts show a Development-only environment notice. Account registration, sign-in, profile editing, password changes, and recovery use ASP.NET Identity and the local development database; confirmation/reset email is sent only when SMTP is configured.
 
-> DEVELOPMENT TEST MODE — Form submissions are temporary and are not saved.
-
-Support creation, profile, password-rule validation, notification-preference, and public contact forms can validate in Development and return an explicit temporary test confirmation. Values are discarded after the response. Passwords are cleared and never echoed or stored. No localStorage, files, database, email, payment, device, or external API operation is used. Device/safety controls, authentication, payment initiation, and subscription activation remain unavailable.
+Support creation, notification-preference, and public contact forms can validate in Development and return an explicit temporary test confirmation. Those test values are discarded after the response. Passwords submitted to Identity are never echoed or logged. The demo banner identifies simulated portal data and discloses that account actions use local Identity and configured SMTP. Remote pump controls remain disabled pending the safety review.
 
 To verify locally, run `dotnet run --environment Development`, inspect the banner, submit invalid values to see validation, then submit valid non-sensitive test values and confirm the temporary message. Run with `--environment Production` to confirm the banner is absent. Browser verification remains a separate manual step if no browser automation is available.

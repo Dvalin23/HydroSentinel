@@ -1,0 +1,15 @@
+@page
+@model HydroSentinel.Pages.Account.ResendConfirmationModel
+@{ Layout = "_AuthLayout"; ViewData["Title"] = "Resend confirmation"; }
+<section class="auth-main"><div class="shell"><div class="auth-panel">
+    <p class="auth-eyebrow">Email confirmation</p>
+    <h1>Request a new link</h1>
+    <p>Enter the email address used to register.</p>
+    <form method="post" class="auth-form">
+        <div asp-validation-summary="ModelOnly" class="auth-notice" role="alert"></div>
+        <div class="auth-field"><label for="email">Email address</label><input id="email" name="email" type="email" value="@Model.Email" autocomplete="email" required maxlength="256" /><span asp-validation-for="Email"></span></div>
+        <button class="button button-primary auth-submit" type="submit">Send confirmation link</button>
+    </form>
+    @if (Model.StatusMessage is not null) { <p class="auth-notice" role="status">@Model.StatusMessage</p> }
+    <p class="auth-secondary"><a asp-page="/Login">Return to sign in</a></p>
+</div></div></section>

@@ -9,5 +9,5 @@ public interface IFormTestingMode
 public sealed class FormTestingMode(IWebHostEnvironment environment) : IFormTestingMode
 {
     public bool Enabled => environment.IsDevelopment();
-    public string BannerText => "DEVELOPMENT TEST MODE — Form submissions are temporary and are not saved.";
+    public string BannerText => "DEVELOPMENT ENVIRONMENT — Use test accounts only. Account changes may be saved to the local development database.";
 }

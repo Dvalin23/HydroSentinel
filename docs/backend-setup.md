@@ -29,8 +29,19 @@ dotnet user-secrets set "Paystack:SecretKey" "sk_test_..."
 dotnet user-secrets set "Device:RelaySecret" "<long random string>"
 dotnet user-secrets set "Seed:AdminEmail" "you@firmlon.example"
 dotnet user-secrets set "Seed:AdminPassword" "<at least 10 chars>"
+dotnet user-secrets set "Email:PublicBaseUrl" "https://portal.example.com"
+dotnet user-secrets set "Email:SmtpHost" "smtp.example.com"
+dotnet user-secrets set "Email:SmtpPort" "587"
+dotnet user-secrets set "Email:SmtpUsername" "mailer@example.com"
+dotnet user-secrets set "Email:SmtpPassword" "<smtp credential>"
+dotnet user-secrets set "Email:FromAddress" "no-reply@example.com"
 dotnet user-secrets set "Demo:Enabled" "false"      # Development only: use the real backend instead of sample data
 ```
+
+Account email delivery uses SMTP with STARTTLS on port 587. Set `Email:PublicBaseUrl` to the public HTTPS origin
+without a path. Registration requires a configured mail sender and a confirmation link; password reset and email
+changes use expiring Identity tokens. Keep SMTP credentials in user-secrets locally and the host secret store in
+production. Do not set `Email:EnableSsl` to false.
 
 Production also needs `Database:Provider=Postgres`, `ConnectionStrings:Default`, `Paystack:PublicBaseUrl`
 (your public https origin), a persistent Data Protection key store (see `backend-handover.md`), and HTTPS.
@@ -90,9 +101,9 @@ Public: `POST /api/paystack/webhook` (HMAC-SHA512 signature), `GET /pay/callback
 
 ## Not done / confirm before production
 
-- Support tickets, notification persistence/preferences, profile updates, password changes/reset email, approved help articles, and attachments remain unavailable or validation-only shells.
+- Support tickets, notification persistence/preferences, approved help articles, and attachments remain unavailable or validation-only shells.
 - Customer dashboard, device, monitoring, alerts, subscription, plan, and payment-history pages are bound to the persisted customer data. Admin API endpoints exist, but the Admin pages still need their data binding reviewed.
-- Email confirmation is not required yet because no email sender is configured. SMS/email alert delivery is not implemented.
+- Registration requires email confirmation. The profile and security pages support profile edits, verified email changes, password changes, and password recovery when SMTP is configured. SMS/email alert delivery is not implemented.
 - There is no background job that raises `went_offline` events; freshness is derived when data is read.
 - Production needs EF migrations, a production database and secret store, persistent protected Data Protection keys, deployment/monitoring/backups, and a clean verification pass.
 - Product must confirm catalogue terms and lifecycle values. Remote locking remains disabled pending firmware safety work and approval.

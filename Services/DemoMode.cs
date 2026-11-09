@@ -25,7 +25,7 @@ public sealed class DemoMode(IWebHostEnvironment environment, IConfiguration con
 
     // Development only. Set Demo:Enabled=false to exercise the real backend locally.
     public bool Enabled => environment.IsDevelopment() && configuration.GetValue("Demo:Enabled", true);
-    public string BannerText => "DEMO MODE — Sample data only. No hardware, payment, email, or backend service is contacted.";
+    public string BannerText => "DEVELOPMENT DEMO — Sample portal data is simulated. Account actions use the local identity database; email is sent only when SMTP is configured.";
     public DemoSnapshot Snapshot { get { lock (gate) return Enabled ? state.Clone() : DemoSnapshot.Empty; } }
 
     public void Reset()

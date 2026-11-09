@@ -2,6 +2,41 @@
 @model HydroSentinel.Pages.Customer.Settings.ProfileModel
 @{ Layout = "_CustomerLayout"; ViewData["Title"] = "Profile & Settings"; }
 @section Styles { <link rel="stylesheet" href="~/css/customer-account-support.css" asp-append-version="true" /> }
-<section class="stage7-intro"><div><p class="customer-eyebrow">Account settings</p><h2>Keep your profile current.</h2><p class="customer-lede">Review approved account details and security settings in one compact workspace.</p></div><span class="customer-status-badge"><span></span>@(Model.TestModeEnabled ? "Temporary test mode" : "Account unavailable")</span></section>
-<nav class="stage7-tabs" aria-label="Settings sections"><a class="stage7-tab is-active" aria-current="page" asp-page="/Customer/Settings/Profile">Profile</a><a class="stage7-tab" asp-page="/Customer/Settings/Security">Security</a><a class="stage7-tab" asp-page="/Customer/Settings/Notifications">Notifications</a></nav>
-<div class="stage7-grid stage7-profile-grid"><section class="stage7-panel"><div class="stage7-panel-head"><div><h3>Account information</h3><p>No customer identity is prefilled in preview mode.</p></div></div><div class="stage7-panel-body">@if (Model.TestStatus is not null) { <div class="stage7-test-confirmation" role="status">@Model.TestStatus</div> }<form method="post" class="stage7-form" aria-describedby="profile-status"><div asp-validation-summary="ModelOnly" class="stage7-validation"></div><div class="stage7-form-grid"><div class="stage7-field"><label asp-for="Input.FullName"></label><input asp-for="Input.FullName" disabled="@(!Model.TestModeEnabled)" aria-describedby="profile-status" /></div><div class="stage7-field"><label asp-for="Input.Email"></label><input asp-for="Input.Email" type="email" disabled="@(!Model.TestModeEnabled)" aria-describedby="profile-status" /></div><div class="stage7-field"><label asp-for="Input.Phone"></label><input asp-for="Input.Phone" type="tel" disabled="@(!Model.TestModeEnabled)" aria-describedby="profile-status" /></div><div class="stage7-field"><label asp-for="Input.Company"></label><input asp-for="Input.Company" disabled="@(!Model.TestModeEnabled)" aria-describedby="profile-status" /></div></div><p id="profile-status" class="stage7-note">@(Model.TestModeEnabled ? "Test mode validates fields locally on the server; values are discarded after this response." : "Profile fields and saving are unavailable until the authenticated profile service returns trusted account data.")</p><div class="stage7-form-actions"><button type="submit" class="customer-button customer-button-primary stage7-disabled" disabled="@(!Model.TestModeEnabled)" aria-describedby="profile-status">@(Model.TestModeEnabled ? "Validate test submission" : "Save changes")</button></div></form></div></section><section class="stage7-panel"><div class="stage7-panel-head"><div><h3>Change password</h3><p>Passwords are never displayed, stored, or logged by this page.</p></div></div><div class="stage7-panel-body"><div class="stage7-field"><label for="profile-current-password">Current password</label><input id="profile-current-password" type="password" autocomplete="current-password" disabled aria-describedby="profile-security-status" /></div><div class="stage7-field stage7-field-spaced"><label for="profile-new-password">New password</label><input id="profile-new-password" type="password" autocomplete="new-password" disabled aria-describedby="profile-security-status" /></div><p id="profile-security-status" class="stage7-note">Password changes require the identity provider and remain unavailable even in test mode.</p><div class="stage7-form-actions"><a class="customer-button customer-button-secondary" asp-page="/Customer/Settings/Security">Open security settings <span aria-hidden="true">→</span></a></div></div></section></div>
+
+<section class="stage7-intro">
+    <div><p class="customer-eyebrow">Account settings</p><h2>Keep your profile current.</h2><p class="customer-lede">Update your contact details and manage your sign-in security.</p></div>
+    <span class="customer-status-badge"><span></span>Account active</span>
+</section>
+<nav class="stage7-tabs" aria-label="Settings sections">
+    <a class="stage7-tab is-active" aria-current="page" asp-page="/Customer/Settings/Profile">Profile</a>
+    <a class="stage7-tab" asp-page="/Customer/Settings/Security">Security</a>
+    <a class="stage7-tab" asp-page="/Customer/Settings/Notifications">Notifications</a>
+</nav>
+<div class="stage7-grid stage7-profile-grid">
+    <section class="stage7-panel">
+        <div class="stage7-panel-head"><div><h3>Account information</h3><p>Changes are saved to your account.</p></div></div>
+        <div class="stage7-panel-body">
+            @if (Model.StatusMessage is not null) { <p class="@(Model.StatusIsError ? "stage7-validation" : "stage7-note")" role="status">@Model.StatusMessage</p> }
+            <form method="post" class="stage7-form" aria-describedby="profile-status">
+                <div asp-validation-summary="ModelOnly" class="stage7-validation" role="alert"></div>
+                <div class="stage7-form-grid">
+                    <div class="stage7-field"><label asp-for="Input.FullName"></label><input asp-for="Input.FullName" autocomplete="name" /><span asp-validation-for="Input.FullName" class="stage7-validation"></span></div>
+                    <div class="stage7-field"><label asp-for="Input.Email"></label><input asp-for="Input.Email" type="email" autocomplete="email" aria-describedby="email-status" /><span asp-validation-for="Input.Email" class="stage7-validation"></span><span id="email-status" class="stage7-help">Current confirmed address: @Model.CurrentEmail. A new address takes effect after confirmation.</span></div>
+                    <div class="stage7-field"><label asp-for="Input.Phone"></label><input asp-for="Input.Phone" type="tel" autocomplete="tel" /><span asp-validation-for="Input.Phone" class="stage7-validation"></span></div>
+                </div>
+                <p id="profile-status" class="stage7-note">Email changes require a confirmation email. @if (!Model.EmailDeliveryConfigured) { <span>Email delivery is not configured, so changing the address is temporarily unavailable.</span> }</p>
+                <div class="stage7-form-actions"><button type="submit" class="customer-button customer-button-primary">Save changes</button></div>
+            </form>
+        </div>
+    </section>
+    <section class="stage7-panel">
+        <div class="stage7-panel-head"><div><h3>Password</h3><p>Use your current password to change it.</p></div></div>
+        <div class="stage7-panel-body stage7-stack">
+            <p class="stage7-note">For a forgotten password, request a secure reset link by email.</p>
+            <div class="stage7-form-actions">
+                <a class="customer-button customer-button-secondary" asp-page="/Customer/Settings/Security">Change password</a>
+                <a class="customer-button customer-button-secondary" asp-page="/Account/ForgotPassword">Forgot password?</a>
+            </div>
+        </div>
+    </section>
+</div>

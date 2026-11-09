@@ -89,19 +89,17 @@ Ticket confirmation is shown only after the server returns a ticket ID.
 
 `GET/PATCH /api/customer/profile`; `POST /api/customer/security/password`; `GET/PATCH /api/customer/notification-preferences`.
 
-Password changes require the existing security provider, current-password verification where appropriate, antiforgery protections, rate limiting, and safe error handling.
+The browser account workflows currently use authenticated Razor Page handlers, not these JSON endpoints: profile name/phone updates, verified email changes, password change, confirmation, and password reset are implemented through ASP.NET Identity. SMTP must be configured for email flows. Password changes verify the current password, use antiforgery protection, and are rate limited.
 
-### Support, notifications, profile, security, and help (proposed, unimplemented)
+### Support, notifications, and help API contracts (proposed, unimplemented)
 
-These contracts require backend-team agreement and are not implemented by the current Razor Pages application.
+The following JSON API contracts require backend-team agreement and are not implemented by the current application. The profile/security JSON endpoints above remain proposals; their account actions currently use Razor Page handlers.
 
 - `GET /api/customer/support/tickets?status=&query=&cursor=` returns authenticated-customer ticket summaries `{ items: [{ id, reference, subject, category, status, priority?, createdAt, updatedAt? }], nextCursor, sourceStatus }`. The server derives customer ownership, validates filters, and returns explicit unavailable, timeout, unauthorized, forbidden, and failure responses.
 - `POST /api/customer/support/tickets` accepts `{ subject, category, deviceId?, description }` with antiforgery protection, validation, rate limiting, ownership checks for related devices, and an idempotency key. A success response must contain a persisted ticket ID/reference; the UI must not show confirmation before that response. Attachments require a separate approved contract covering type, size, malware scanning, storage, retention, and authorization.
 - `GET /api/customer/support/tickets/{id}` returns only an owned ticket `{ id, reference, subject, description, category, status, priority?, device?, createdAt, updatedAt?, messages? }`. Query IDs are never authorization. `POST /api/customer/support/tickets/{id}/replies` is optional and must return a persisted reply or a safe failure.
 - `GET /api/customer/notifications?category=&unread=&cursor=` returns `{ items: [{ id, title, message, category?, severity?, createdAt, unread, destination? }], nextCursor, sourceStatus, freshness? }`. Destinations must be server-approved or safely mapped; unavailable is not an empty/all-clear response.
 - `POST /api/customer/notifications/{id}/read` and `POST /api/customer/notifications/read-all` are optional idempotent operations. The UI must only enable them after backend support exists and must not claim persistence from local state.
-- `GET/PATCH /api/customer/profile` returns/updates only approved fields such as `{ fullName?, email?, phone?, company? }`. The server owns identity, verified-contact rules, authorization, validation, audit, and concurrency handling. Email changes may require a separate verification flow.
-- `POST /api/customer/security/password` accepts `{ currentPassword, newPassword, confirmPassword }` over an authenticated antiforgery-protected request. The identity provider must enforce policy, rate limits, safe errors, session rules, and redacted logging. Passwords must never be returned or logged.
 - `GET/PATCH /api/customer/notification-preferences` returns/updates only approved channels and categories. Safety-critical notification policy must be enforced server-side; unsupported channels must not be exposed as enabled capabilities.
 - `GET /api/customer/help/articles?query=&category=&cursor=` returns approved, versioned article content `{ items: [{ id, title, category, summary, body, updatedAt }], nextCursor, sourceStatus }`. Draft or unreviewed product guidance must not be presented as official instructions.
 

@@ -25,7 +25,12 @@ public class LoginModel(SignInManager<ApplicationUser> signIn, UserManager<Appli
         if (user is null) { ModelState.AddModelError(string.Empty, generic); return Page(); }
 
         var result = await signIn.PasswordSignInAsync(user, Input.Password, isPersistent: false, lockoutOnFailure: true);
-        if (!result.Succeeded) { ModelState.AddModelError(string.Empty, result.IsLockedOut ? "Too many attempts. Try again in a few minutes." : generic); return Page(); }
+        if (!result.Succeeded)
+        {
+            // Keep unknown users, bad passwords, lockout, and unconfirmed accounts indistinguishable.
+            ModelState.AddModelError(string.Empty, generic);
+            return Page();
+        }
 
         if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl)) return LocalRedirect(ReturnUrl);
         return await users.IsInRoleAsync(user, Roles.Admin) ? RedirectToPage("/Admin/Dashboard") : RedirectToPage("/Customer/Index");

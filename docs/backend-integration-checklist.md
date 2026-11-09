@@ -8,10 +8,11 @@ Status values: **implemented**, **pending**, **blocked**, or **requires confirma
 
 | Requirement | Responsible area | Status | Evidence / remaining work |
 |---|---|---|---|
-| Registration and sign-in | Backend | implemented | ASP.NET Identity registration/sign-in, lockout, generic login errors, and customer-only self-registration exist. Email confirmation and recovery are not available. |
-| Identity provider and customer model | Backend/Product | implemented / requires confirmation | ASP.NET Core Identity with Customer/Admin roles and one-user device ownership is configured. Product must confirm tenant/account model, MFA, recovery, and customer terms. |
-| Password recovery and password changes | Backend | pending | No email sender, reset delivery, or authenticated password-change flow. |
-| Customer authorization and ownership checks | Backend | implemented / pending | Customer API/page access uses the signed-in user's role and owned device/user scope for devices, readings, alerts, subscription, and payments. Support/profile services do not exist; cross-customer integration checks remain to be run. |
+| Registration and sign-in | Backend | implemented / pending configuration | ASP.NET Identity registration and sign-in require confirmed email. Confirmation resend and lockout are implemented; configure SMTP before enabling registration. |
+| Identity provider and customer model | Backend/Product | implemented / requires confirmation | ASP.NET Core Identity with Customer/Admin roles and one-user device ownership is configured. Product must confirm tenant/account model, MFA, and publish the customer terms/privacy documents. |
+| Email confirmation and verified email changes | Backend/Operations | implemented / pending configuration | Identity confirmation/change tokens, pages, and SMTP STARTTLS sender exist. Configure the sender and public HTTPS origin; exercise delivery, expiry, and existing unconfirmed accounts. |
+| Password recovery and password changes | Backend | implemented / pending configuration | Reset requests send expiring Identity links without revealing account existence; authenticated password change verifies the current password. SMTP delivery remains to be configured/tested. |
+| Customer authorization and ownership checks | Backend | implemented / pending | Customer API/page access uses the signed-in user's role and owned device/user scope for devices, readings, alerts, subscription, payments, and account settings. Support services do not exist; cross-customer integration checks remain to be run. |
 | Session and cookie security | Backend/Operations | implemented / pending | Secure, HttpOnly, SameSite=Lax cookies, eight-hour expiry, HTTPS redirect, and antiforgery are configured. Review production proxy/cookie behavior, MFA, and session invalidation. |
 | Audit logging | Backend/Operations | implemented / pending | Audit service and selected device/payment mutations exist. Confirm coverage, correlation, retention, redaction, and operational sink. |
 
@@ -19,7 +20,7 @@ Status values: **implemented**, **pending**, **blocked**, or **requires confirma
 
 | Requirement | Responsible area | Status | Evidence / remaining work |
 |---|---|---|---|
-| Customer profile persistence | Backend | pending | Registration data is persisted; editable profile reads/updates are not implemented. |
+| Customer profile persistence | Backend | implemented | Full name and phone updates persist; changing email requires confirmation at the new address. |
 | Device registration and ownership verification | Backend/Hardware | implemented / requires confirmation | Admin registration and customer self-claim by serial plus one-time key exist; duplicate/conflict outcomes are handled. Confirm provisioning and ownership recovery with hardware/support. |
 | Device inventory and details | Backend | implemented | Customer-scoped database queries back device list and detail pages; identifiers are masked in customer-facing APIs. |
 | Device status and last-seen timestamps | Backend/Hardware | implemented / requires confirmation | Check-ins persist last-seen state; freshness labels are derived in code. Confirm offline threshold with hardware/product. |

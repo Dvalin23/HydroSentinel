@@ -1,14 +1,18 @@
 # Customer Portal Route Map
 
-The customer shell and placeholder routes below now exist. They are not connected to customer data or authentication yet. Every route should require authenticated customer access once authentication is implemented. Admin routes are intentionally excluded.
+The customer route map includes both live data-backed pages and remaining presentation shells. Customer pages require the configured Identity role outside Development demo mode. Admin routes are intentionally excluded.
 
 ## Account routes
 
 | Route | Purpose | States/actions |
 |---|---|---|
 | `/Login` | Existing login page; integrate with real account handler | validation, authentication failure, return URL |
-| `/GetStarted` | Existing registration page; integrate with real registration handler | validation, duplicate email, success, failure |
-| `/Account/ForgotPassword` | Password recovery request | invalid email, request accepted, unavailable workflow |
+| `/GetStarted` | Customer registration with required email confirmation | validation, generic duplicate handling, confirmation email |
+| `/Account/RegisterConfirmation` | Registration confirmation state | message delivery state, resend link |
+| `/Account/ConfirmEmail` | Confirm new account email or changed address | success, invalid/expired token |
+| `/Account/ResendConfirmation` | Resend account confirmation email | generic response, SMTP availability |
+| `/Account/ForgotPassword` | Password recovery request | generic response, SMTP availability |
+| `/Account/ResetPassword` | Reset password from a one-use Identity token | password validation, expired/invalid token, success |
 
 ## Customer routes
 
@@ -29,8 +33,8 @@ The customer shell and placeholder routes below now exist. They are not connecte
 | `/Customer/Support` | Ticket list | search/filter, create ticket, open ticket |
 | `/Customer/Support/Create` | Create ticket | validate, submit, confirmation from server |
 | `/Customer/Support/Details?id={id}` | Ticket conversation | reply, status, resolution history |
-| `/Customer/Settings/Profile` | Profile details | edit and save verified response |
-| `/Customer/Settings/Security` | Password/security | change password, session/sign-out controls |
+| `/Customer/Settings/Profile` | Profile details | save full name/phone; email change requires confirmation |
+| `/Customer/Settings/Security` | Password/security | change password after current-password verification; link to reset flow |
 | `/Customer/Settings/Notifications` | Notification preferences | save preferences, confirmation |
 | `/Customer/Help` | Help Centre | FAQs, setup, troubleshooting, support links |
 
@@ -70,9 +74,9 @@ The support, account, notification, and help routes now have dedicated responsiv
 - `/Customer/Support/Create` provides validated subject, category, related-device, and description fields. Controls remain disabled until ticket persistence and ownership services exist; no ticket success is shown.
 - `/Customer/Support/Details?id={id}` validates the query-string reference and does not resolve or expose ticket data without a server ownership check.
 - `/Customer/Notifications` provides an unavailable notification centre. Read-state controls remain disabled and do not mutate local state.
-- `/Customer/Settings/Profile` provides empty, disabled profile fields with server-save requirements.
-- `/Customer/Settings/Security` provides password-change structure and reset guidance without handling plaintext passwords or simulating identity operations.
+- `/Customer/Settings/Profile` reads and saves the signed-in user's name and phone; email changes take effect only after confirmation at the new address.
+- `/Customer/Settings/Security` uses ASP.NET Identity for authenticated password changes; reset requests use expiring, one-use Identity tokens sent by the configured SMTP service.
 - `/Customer/Settings/Notifications` provides disabled preference controls and does not assume email, SMS, WhatsApp, push, or delivery capabilities.
 - `/Customer/Help` provides route-linked topic guidance, honest article-unavailable/search states, and restrained draft FAQ structure.
 
-These pages remain dependent on authenticated identity, profile, support-ticket, notification, notification-preference, and approved-help-content services. No customer records, tickets, messages, notifications, saved preferences, password changes, or support confirmations are implemented.
+Support, notification, preference, and approved-help-content pages remain dependent on services that are not implemented. Account profile/password workflows are connected to Identity, but email flows require SMTP configuration and MFA is not enabled.

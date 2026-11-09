@@ -22,9 +22,10 @@
         </div>
         <div class="auth-panel">
             <h2>Sign in</h2>
-            <p>Use your Firmlon account details to access your HydroSentinel experience.</p>
+            <p>Use your confirmed Firmlon account details to access the HydroSentinel customer portal.</p>
             <form class="auth-form" method="post" aria-label="Sign in">
                 <div asp-validation-summary="ModelOnly" class="auth-notice" role="alert"></div>
+                @if (TempData["StatusMessage"] is string statusMessage) { <p class="auth-notice" role="status">@statusMessage</p> }
                 <input type="hidden" asp-for="ReturnUrl" />
                 <fieldset class="auth-fields">
                     <div class="auth-field"><label asp-for="Input.Email">Email address</label><input asp-for="Input.Email" type="email" autocomplete="email" placeholder="Enter your email address" /><span asp-validation-for="Input.Email"></span></div>
@@ -32,6 +33,7 @@
                 </fieldset>
                 <button class="button button-primary auth-submit" type="submit">Sign in <span aria-hidden="true">&rarr;</span></button>
             </form>
+            <p class="auth-secondary"><a asp-page="/Account/ForgotPassword">Forgot your password?</a> · <a asp-page="/Account/ResendConfirmation">Resend email confirmation</a></p>
             <p class="auth-secondary">New to HydroSentinel? <a asp-page="/GetStarted">Get started</a></p>
         </div>
     </div>

@@ -4,15 +4,16 @@
 
 The repository now contains a working backend implementation in code; this is no longer a frontend-only shell. ASP.NET Core Identity, role authorization, SQLite development persistence, PostgreSQL provider configuration, customer-scoped device/telemetry/alert/subscription/payment APIs, Paystack verification, device check-in, and customer portal page-model bindings are present. Customer registration, sign-in, device self-claim, and first-claim trial setup are implemented.
 
-The latest portal integration is commit `f0bf097` (`Wire the customer portal to live data`). NuGet's vulnerability audit reports no vulnerable packages, and `dotnet build --no-restore` succeeds with zero warnings and errors after the dependency update. No runtime behavior was exercised as part of this handover update. Treat all statements here as repository evidence, not a production-readiness or security sign-off.
+Customer account services now include confirmed registration, email-change confirmation, password reset/change, and persisted name/phone updates. Email sending uses MailKit over SMTP STARTTLS; registration and recovery remain unavailable until SMTP credentials and the public HTTPS origin are configured. NuGet reports no vulnerable packages, and `dotnet build --no-restore` succeeds with zero warnings and errors. No runtime behavior or email delivery was exercised. Treat this as repository evidence, not a production-readiness or security sign-off.
 
 ## Remaining work
 
 ### Account and customer services
 
-- Add confirmed-email delivery and password reset/change flows. Email confirmation is intentionally not required yet because no email sender is configured.
-- Add persisted profile updates, support tickets, notification retrieval/preferences, and approved help content. These remain disabled or validation-only shells.
-- Review the single-user ownership model, account recovery, MFA, session invalidation, and customer terms acceptance.
+- Confirm SMTP configuration and deliverability in the target environment. New registrations require email confirmation; password reset and email change use expiring Identity tokens.
+- Review existing unconfirmed accounts after enabling required email confirmation. They can request a confirmation link, but cannot sign in until they confirm.
+- Support tickets, notification retrieval/preferences, and approved help content remain disabled or validation-only shells.
+- Product must approve the customer/tenant model, MFA policy, session invalidation behavior, and publish the Terms of Service and Privacy Policy referenced during registration.
 
 ### Product and billing decisions
 
@@ -30,7 +31,7 @@ The latest portal integration is commit `f0bf097` (`Wire the customer portal to 
 
 ## Verification before production
 
-Run a clean build and focused integration/security checks for registration and sign-in, role authorization, cross-customer access, antiforgery, device claim conflicts, telemetry freshness, alert acknowledgement, payment idempotency/webhook verification, and production database migrations. Review accessible customer pages at desktop and mobile sizes. Do not enable remote pump controls as part of this work.
+Run a clean build and focused integration/security checks for registration and confirmation, resend confirmation, password reset/change, email change, role authorization, cross-customer access, antiforgery, device claim conflicts, telemetry freshness, alert acknowledgement, payment idempotency/webhook verification, and production database migrations. Test SMTP delivery and link expiry with the chosen mail provider. Review accessible customer pages at desktop and mobile sizes. Do not enable remote pump controls as part of this work.
 
 ## Development configuration
 

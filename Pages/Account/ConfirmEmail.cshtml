@@ -1,0 +1,20 @@
+@page
+@model HydroSentinel.Pages.Account.ConfirmEmailModel
+@{ Layout = "_AuthLayout"; ViewData["Title"] = "Confirm email"; }
+<section class="auth-main"><div class="shell"><div class="auth-panel">
+    <p class="auth-eyebrow">Account security</p>
+    <h1>@(Model.Succeeded ? "Email confirmed" : "Email confirmation")</h1>
+    <p role="status">@Model.Message</p>
+    @if (Model.Succeeded && !Model.IsEmailChange)
+    {
+        <a class="button button-primary auth-submit" asp-page="/Login">Continue to sign in</a>
+    }
+    else if (!Model.Succeeded)
+    {
+        <p><a asp-page="/Account/ResendConfirmation">Request a new confirmation link</a></p>
+    }
+    else
+    {
+        <a class="button button-primary auth-submit" asp-page="/Customer/Settings/Profile">Return to profile</a>
+    }
+</div></div></section>
