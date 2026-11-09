@@ -122,3 +122,35 @@ public class AuditEntry
     public string? Detail { get; set; }
     public string? CorrelationId { get; set; }
 }
+
+public static class SupportTicketStatus
+{
+    public const string Open = "Open";
+    public const string InProgress = "In progress";
+    public const string WaitingOnCustomer = "Waiting on customer";
+    public const string Resolved = "Resolved";
+}
+
+public class SupportTicket
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Reference { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public string Subject { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public Guid? DeviceId { get; set; }
+    public string Status { get; set; } = SupportTicketStatus.Open;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public List<SupportMessage> Messages { get; set; } = [];
+}
+
+public class SupportMessage
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TicketId { get; set; }
+    public string? AuthorId { get; set; }
+    public bool IsStaffReply { get; set; }
+    public string Body { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+}

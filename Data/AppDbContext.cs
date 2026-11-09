@@ -11,6 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
+    public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+    public DbSet<SupportMessage> SupportMessages => Set<SupportMessage>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder cb)
     {
@@ -58,6 +60,25 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.HasIndex(x => new { x.UserId, x.IdempotencyKey }).IsUnique();
             e.Property(x => x.Reference).HasMaxLength(64);
             e.Property(x => x.IdempotencyKey).HasMaxLength(100);
+        });
+
+        b.Entity<SupportTicket>(e =>
+        {
+            e.HasIndex(x => x.Reference).IsUnique();
+            e.HasIndex(x => new { x.UserId, x.UpdatedAt });
+            e.Property(x => x.Reference).HasMaxLength(32);
+            e.Property(x => x.UserId).HasMaxLength(450);
+            e.Property(x => x.Subject).HasMaxLength(160);
+            e.Property(x => x.Category).HasMaxLength(80);
+            e.Property(x => x.Status).HasMaxLength(32);
+            e.HasMany(x => x.Messages).WithOne().HasForeignKey(x => x.TicketId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<SupportMessage>(e =>
+        {
+            e.HasIndex(x => new { x.TicketId, x.CreatedAt });
+            e.Property(x => x.AuthorId).HasMaxLength(450);
+            e.Property(x => x.Body).HasMaxLength(4000);
         });
     }
 }

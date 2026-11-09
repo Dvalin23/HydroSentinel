@@ -4,7 +4,9 @@
 
 The repository now contains a working backend implementation in code; this is no longer a frontend-only shell. ASP.NET Core Identity, role authorization, SQLite development persistence, PostgreSQL provider configuration, customer-scoped device/telemetry/alert/subscription/payment APIs, Paystack verification, device check-in, and customer portal page-model bindings are present. Customer registration, sign-in, device self-claim, and first-claim trial setup are implemented.
 
-Customer account services now include confirmed registration, email-change confirmation, password reset/change, and persisted name/phone updates. Email sending uses MailKit over SMTP STARTTLS; registration and recovery remain unavailable until SMTP credentials and the public HTTPS origin are configured. NuGet reports no vulnerable packages, and `dotnet build --no-restore` succeeds with zero warnings and errors. No runtime behavior or email delivery was exercised. Treat this as repository evidence, not a production-readiness or security sign-off.
+Customer account services now include confirmed registration, email-change confirmation, password reset/change, and persisted name/phone updates. Email sending uses MailKit over SMTP STARTTLS; the user configured Gmail locally and confirmed the account email flow works. Other environments must provide their own SMTP credentials and public HTTPS origin. The latest build succeeds with zero warnings and errors. Treat this as repository evidence, not a production-readiness or security sign-off.
+
+Support tickets now persist with customer ownership checks, customer conversation replies, an authenticated admin queue, staff replies, controlled status updates, and audit entries. A build passed; the new runtime flow still needs customer-isolation and staff-workflow verification. Notifications/email alerts, attachments, and reviewed production database migrations remain outstanding.
 
 ## Remaining work
 
@@ -12,7 +14,7 @@ Customer account services now include confirmed registration, email-change confi
 
 - Confirm SMTP configuration and deliverability in the target environment. New registrations require email confirmation; password reset and email change use expiring Identity tokens.
 - Review existing unconfirmed accounts after enabling required email confirmation. They can request a confirmation link, but cannot sign in until they confirm.
-- Support tickets, notification retrieval/preferences, and approved help content remain disabled or validation-only shells.
+- Notifications and approved Help Centre content remain disabled or validation-only shells. Support tickets are implemented in code; production database migrations and workflow verification remain outstanding.
 - Product must approve the customer/tenant model, MFA policy, session invalidation behavior, and publish the Terms of Service and Privacy Policy referenced during registration.
 
 ### Product and billing decisions

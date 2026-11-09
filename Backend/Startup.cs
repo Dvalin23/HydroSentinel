@@ -96,6 +96,7 @@ public static class Startup
         services.AddScoped<AccountEmailSender>();
         services.AddScoped<IEmailSender<ApplicationUser>>(sp => sp.GetRequiredService<AccountEmailSender>());
         services.AddScoped<AccountEmailLinks>();
+        services.AddScoped<SupportTicketService>();
         services.AddScoped<CheckInService>();
         services.AddScoped<DeviceClaimService>();
         services.AddScoped<CustomerPortal>();
@@ -113,6 +114,10 @@ public static class Startup
         // Production: run `dotnet ef database update` from a migration instead.
         if (app.Environment.IsDevelopment()) await db.Database.EnsureCreatedAsync();
 
+        // The project predates an EF migration baseline. Create the additive support tables
+        // idempotently so existing development databases can use the new feature immediately.
+        await EnsureSupportTablesAsync(db, app.Configuration["Database:Provider"] ?? "Sqlite");
+
         var roles = sp.GetRequiredService<RoleManager<IdentityRole>>();
         foreach (var r in new[] { Roles.Admin, Roles.Customer })
             if (!await roles.RoleExistsAsync(r)) await roles.CreateAsync(new IdentityRole(r));
@@ -128,5 +133,35 @@ public static class Startup
             if (created.Succeeded) await users.AddToRoleAsync(admin, Roles.Admin);
             else app.Logger.LogError("Admin seed failed: {Errors}", string.Join("; ", created.Errors.Select(e => e.Code)));
         }
+    }
+
+    private static async Task EnsureSupportTablesAsync(AppDbContext db, string provider)
+    {
+        var idType = provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase) ? "uuid" : "TEXT";
+        var sql = $"""
+            CREATE TABLE IF NOT EXISTS "SupportTickets" (
+                "Id" {idType} NOT NULL PRIMARY KEY,
+                "Reference" TEXT NOT NULL,
+                "UserId" TEXT NOT NULL,
+                "Subject" TEXT NOT NULL,
+                "Category" TEXT NOT NULL,
+                "DeviceId" {idType} NULL,
+                "Status" TEXT NOT NULL,
+                "CreatedAt" BIGINT NOT NULL,
+                "UpdatedAt" BIGINT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_SupportTickets_Reference" ON "SupportTickets" ("Reference");
+            CREATE INDEX IF NOT EXISTS "IX_SupportTickets_UserId_UpdatedAt" ON "SupportTickets" ("UserId", "UpdatedAt");
+            CREATE TABLE IF NOT EXISTS "SupportMessages" (
+                "Id" {idType} NOT NULL PRIMARY KEY,
+                "TicketId" {idType} NOT NULL REFERENCES "SupportTickets" ("Id") ON DELETE CASCADE,
+                "AuthorId" TEXT NULL,
+                "IsStaffReply" BOOLEAN NOT NULL,
+                "Body" TEXT NOT NULL,
+                "CreatedAt" BIGINT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS "IX_SupportMessages_TicketId_CreatedAt" ON "SupportMessages" ("TicketId", "CreatedAt");
+            """;
+        await db.Database.ExecuteSqlRawAsync(sql);
     }
 }

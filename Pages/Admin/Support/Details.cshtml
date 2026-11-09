@@ -1,5 +1,20 @@
 @page
 @model HydroSentinel.Pages.Admin.AdminPageModel
-@{ Layout = "_AdminLayout"; ViewData["Title"] = "Support detail"; var ticket = Model.Data.Data.Tickets.FirstOrDefault(x => x.Reference.Equals(Model.Id ?? "", StringComparison.OrdinalIgnoreCase)); }
-<div class="admin-page-head"><div><p class="admin-page-kicker">Service desk / detail</p><h1>Support detail</h1><p>Read-only queue preview for <code>@(Model.Id ?? "no id supplied")</code>.</p></div><a class="admin-button admin-button-secondary" asp-page="/Admin/Support">Back to support</a></div>
-@if (!Model.IsDemo || ticket is null) { <div class="admin-state"><strong>@(Model.IsDemo ? "Support ticket not found" : "Support detail unavailable")</strong><p>@(Model.IsDemo ? "The requested reference does not match a demo ticket." : "The authenticated ticket service is required here.")</p></div> } else { <div class="admin-demo-note">DEVELOPMENT DEMO · This conversation is fictional. Reply, assignment, and status changes are unavailable.</div><article class="admin-card"><div class="admin-card-heading"><div><h2>@ticket.Subject</h2><small>@ticket.Reference · @ticket.Category</small></div><span class="admin-status open">@ticket.Status</span></div><div class="admin-detail-list"><div><span>Priority</span><b>@ticket.Priority</b></div><div><span>Created</span><b>@ticket.Created.LocalDateTime.ToString("g")</b></div><div><span>Description</span><b>@ticket.Description</b></div></div><div class="admin-state" style="margin-top:20px"><strong>Response workflow unavailable</strong><p>Ticket replies require authenticated ownership, notification delivery, and audit logging.</p><button class="admin-button admin-button-secondary" type="button" disabled>Reply unavailable</button></div></article> }
+@{ Layout = "_AdminLayout"; ViewData["Title"] = "Support detail"; }
+<div class="admin-page-head"><div><p class="admin-page-kicker">Service desk / detail</p><h1>@(Model.SupportTicket?.Subject ?? "Support ticket not found")</h1><p>@(Model.SupportTicket is null ? "No request matches this reference." : $"{Model.SupportTicket.Reference} · {Model.SupportTicket.Category}")</p></div><a class="admin-button admin-button-secondary" asp-page="/Admin/Support">Back to support</a></div>
+@if (Model.SupportTicket is null) { <div class="admin-state"><strong>Support ticket not found</strong><p>The requested reference does not match a customer request.</p></div> }
+else {
+    var ticket = Model.SupportTicket;
+    @if (Model.SupportActionStatus is string actionStatus) { <div class="admin-state" role="status"><strong>@actionStatus</strong></div> }
+    <article class="admin-card">
+        <div class="admin-card-heading"><div><h2>Conversation</h2><small>Customer: @(Model.SupportCustomerEmail ?? "Account unavailable")</small></div><span class="admin-status open">@ticket.Status</span></div>
+        <div class="admin-detail-list"><div><span>Created</span><b>@ticket.CreatedAt.LocalDateTime.ToString("g")</b></div><div><span>Last updated</span><b>@ticket.UpdatedAt.LocalDateTime.ToString("g")</b></div><div><span>Related device</span><b>@(ticket.DeviceId?.ToString() ?? "None")</b></div></div>
+        <div class="admin-stack" style="margin-top:20px">
+            @foreach (var message in ticket.Messages) { <div class="admin-state"><strong>@(message.IsStaffReply ? "Firmlon Support" : "Customer") · @message.CreatedAt.LocalDateTime.ToString("g")</strong><p style="white-space:pre-wrap">@message.Body</p></div> }
+        </div>
+    </article>
+    <div class="admin-grid" style="margin-top:20px">
+        <section class="admin-card"><div class="admin-card-heading"><h2>Reply to customer</h2></div><form method="post" asp-page-handler="SupportReply" class="admin-form"><input type="hidden" asp-for="Id" /><div asp-validation-summary="ModelOnly" class="admin-validation" role="alert"></div><label for="SupportReplyText">Message</label><textarea asp-for="SupportReplyText" rows="5" maxlength="4000"></textarea><span asp-validation-for="SupportReplyText" class="admin-validation"></span><button class="admin-button admin-button-primary" type="submit">Send reply</button></form></section>
+        <section class="admin-card"><div class="admin-card-heading"><h2>Update status</h2></div><form method="post" asp-page-handler="SupportStatus" class="admin-form"><input type="hidden" asp-for="Id" /><label for="SelectedSupportStatus">Status</label><select asp-for="SelectedSupportStatus">@foreach (var status in HydroSentinel.Pages.Admin.AdminPageModel.SupportStatuses) { <option value="@status">@status</option> }</select><span asp-validation-for="SelectedSupportStatus" class="admin-validation"></span><button class="admin-button admin-button-secondary" type="submit">Save status</button></form></section>
+    </div>
+}

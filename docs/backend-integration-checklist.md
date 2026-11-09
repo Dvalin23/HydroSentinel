@@ -44,7 +44,7 @@ Status values: **implemented**, **pending**, **blocked**, or **requires confirma
 
 | Requirement | Responsible area | Status | Evidence / remaining work |
 |---|---|---|---|
-| Ticket creation, ownership, replies and status transitions | Backend/Support | pending | Support pages are validation-only; no ticket persistence/service. |
+| Ticket creation, ownership, replies and status transitions | Backend/Support | implemented / pending verification | Customer-owned tickets and conversations persist; customers can reply, admins can reply and change status, and mutations are audited. A build passes; exercise cross-customer denial and staff workflow before production. Attachments and customer email notifications are not included. |
 | Notification delivery and persistence | Backend/Operations | pending | No notification store or delivery integration. |
 | Read/unread state | Backend | pending | No persisted notification read state. |
 | Supported notification preferences | Product/Backend | requires confirmation | Controls remain unavailable outside development validation mode; approve channels and safety rules first. |
@@ -81,6 +81,6 @@ Status values: **implemented**, **pending**, **blocked**, or **requires confirma
 ## Current repository evidence and handover
 
 - The latest customer portal integration is commit `f0bf097` (`Wire the customer portal to live data`). It binds customer dashboard, device, monitoring, alert, subscription, and payment-history pages to persisted, owner-scoped data.
-- NuGet's transitive dependency audit reports no vulnerable packages after the dependency update. `dotnet build --no-restore` succeeds with zero warnings and errors. Runtime behavior was not exercised. Do not interpret **implemented** as production-approved.
+- NuGet's transitive dependency audit reports no vulnerable packages after the dependency update. `dotnet build --no-restore` succeeds with zero warnings and errors. The user confirmed local account-email delivery; the support flow still needs runtime verification. Do not interpret **implemented** as production-approved.
 - Development uses a project-local Data Protection key directory and console logging for the restricted Windows development environment. These are development-only choices.
 - See [backend-setup.md](backend-setup.md) for setup and protocol details and [backend-handover.md](backend-handover.md) for remaining work and production readiness.
