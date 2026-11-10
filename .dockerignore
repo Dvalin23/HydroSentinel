@@ -1,0 +1,14 @@
+.git/
+.codex-local-run/
+.data-protection/
+bin/
+obj/
+**/bin/
+**/obj/
+*.db
+*.db-shm
+*.db-wal
+*.user
+*.suo
+appsettings.*.json
+!.config/

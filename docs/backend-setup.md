@@ -75,12 +75,14 @@ Production also needs `Database:Provider=Postgres`, `ConnectionStrings:Default`,
 
 ## Database
 
-Development uses `EnsureCreated` on SQLite. For production create a real migration (not done here: it needs the SDK):
+Development uses `EnsureCreated` on SQLite. Production uses the checked-in PostgreSQL migration in `Data/Migrations/Postgres`; apply it as a deployment step with `deployment/migrate-postgres.ps1`. Production startup rejects SQLite, requires a PostgreSQL connection string, and refuses to serve while migrations are pending. See `deployment/README.md` for provisioning and secret handling.
+
+To create a future PostgreSQL migration after changing the EF model:
 
 ```
-dotnet tool install --global dotnet-ef
-dotnet ef migrations add Initial
-dotnet ef database update
+dotnet tool restore
+dotnet tool run dotnet-ef migrations add <MigrationName> --context AppDbContext --output-dir Data/Migrations/Postgres
+dotnet tool run dotnet-ef migrations script --idempotent --context AppDbContext --output deployment/postgres-schema.sql
 ```
 
 Timestamps are stored as UTC ticks (a `DateTimeOffset` converter) so queries work on SQLite and PostgreSQL.
@@ -100,7 +102,7 @@ command expiry and replay protection (checklist item E) are still to do on the f
 ## Device protocol
 
 `GET /api/device/checkin?id=<serial>&k=<device key>&w=<L|M|F>&p=<0|1>&m=<0|1>&f=<fault>&lk=<0|1>&b=<battery %>&s=<csq>&pc=<fill %>&pr=<pressure centibar>`
-with header `X-Relay-Secret`. Reply `OK,<lock 0|1>,<unix time>` or `ERR`. On `ERR` the unit keeps its last state.
+returns `OK,<lock 0|1>,<unix time>` or `ERR`. A trusted relay may authenticate with `X-Relay-Secret`; a controller may authenticate directly with its per-device key only over HTTPS. Never send the device key over plain HTTP. On `ERR` the unit keeps its last state. The direct path assumes the modem firmware supports HTTPS and can validate the deployed server certificate; verify that on the exact SIM800L board before relying on it.
 `pc` is measured fill 0-100 and `pr` is line pressure in hundredths of a bar (215 = 2.15 bar); both are optional so
 older firmware keeps working. Out-of-range values are stored as "not reported", never as zero.
 The key is shown once when an admin registers the unit (`POST /api/admin/devices`) or when a customer claims it
@@ -134,5 +136,5 @@ Public: `POST /api/paystack/webhook` (HMAC-SHA512 signature), `GET /pay/callback
 - Customer dashboard, device, monitoring, alerts, subscription, plan, and payment-history pages are bound to the persisted customer data. Admin API endpoints exist, but the Admin pages still need their data binding reviewed.
 - Registration requires email confirmation. The profile and security pages support profile edits, verified email changes, password changes, and password recovery when SMTP is configured. SMS/email alert delivery is not implemented.
 - There is no background job that raises `went_offline` events; freshness is derived when data is read.
-- Production needs EF migrations, a production database and secret store, persistent protected Data Protection keys, deployment/monitoring/backups, and a clean verification pass.
+- Production needs the Render Blueprint deployment (`render.yaml`), a production database and secret store, deployment/monitoring/backups, and a clean hosted verification pass. Production Data Protection keys are persisted in PostgreSQL. See [deployment/README.md](../deployment/README.md) for the deployment steps and required secrets.
 - Product must confirm catalogue terms and publish finalized recurring billing terms. Remote locking remains disabled pending firmware safety work and approval.

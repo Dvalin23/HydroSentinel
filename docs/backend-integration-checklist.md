@@ -55,7 +55,7 @@ Status values: **implemented**, **pending**, **blocked**, or **requires confirma
 
 | Requirement | Responsible area | Status | Evidence / remaining work |
 |---|---|---|---|
-| Controller connectivity and supported protocols | Hardware/Backend | requires confirmation | HTTP check-in endpoint and relay secret are implemented. Confirm actual controller, relay, network, and deployment protocol. |
+| Controller connectivity and supported protocols | Hardware/Backend | partially implemented / requires confirmation | Check-in accepts a trusted relay or a direct HTTPS request authenticated with the per-device key. The submitted SIM800L sketch does not yet send check-ins; verify HTTPS and server-certificate support on its exact modem firmware and confirm APN/hosting. |
 | Device API, MQTT broker, gateway or cloud service | Hardware/Backend | implemented / requires confirmation | `/api/device/checkin` is the current API boundary. Confirm it is the approved authoritative path and document availability/retry behavior. |
 | Device identity and credential management | Hardware/Backend | implemented / pending | One-time device keys are hashed; admin rotation and customer claim exist. Confirm secure physical provisioning, revocation, rotation, and operations. |
 | Telemetry schema, units and reporting frequency | Hardware/Product | partially implemented / requires confirmation | Tank state, percentage, pressure, pump/mains, fault, battery, and signal are represented. Confirm definitions, sampling, source clock, and retention. |
@@ -68,10 +68,10 @@ Status values: **implemented**, **pending**, **blocked**, or **requires confirma
 
 | Requirement | Responsible area | Status | Evidence / remaining work |
 |---|---|---|---|
-| Database selection and migrations | Backend/Operations | partially implemented / pending | SQLite is used in Development and PostgreSQL is configurable. Development uses `EnsureCreated`; production EF migrations and rollback plan are still needed. |
-| Secrets management | Operations | pending | Configuration supports secrets outside source; provision and document the host secret store. |
-| HTTPS and production hosting | Operations | partially implemented / pending | HTTPS redirect and HSTS outside Development exist. Hosting, trusted proxy, headers, certificates, and health checks need deployment configuration. |
-| Data Protection key persistence | Operations | pending | Development has a project-local key ring. Production needs a persistent, access-controlled protected key store. |
+| Database selection and migrations | Backend/Operations | implemented / pending deployment | SQLite `EnsureCreated` is Development-only. A PostgreSQL baseline migration and idempotent SQL script are checked in; Production requires Postgres and rejects startup with pending migrations. Provision the managed DB, apply the migration, and verify backup/restore and rollback procedures in staging. |
+| Secrets management | Operations | partially implemented / pending deployment | Render Blueprint keeps credentials out of source and generates the relay secret. Enter SMTP, admin, and Paystack values in the Render secret store; review access and rotation after deployment. |
+| HTTPS and production hosting | Operations | implemented / pending deployment | Render Docker service, forwarded HTTPS handling, HTTPS redirect/HSTS, and database health check are configured in `render.yaml`. Deploy and verify the hosted URL and custom domain. |
+| Data Protection key persistence | Operations | implemented / pending deployment | Development has a project-local key ring. Production keys persist in PostgreSQL using the EF-backed key store; verify cookies remain usable across restarts after deploy. |
 | Error handling and monitoring | Backend/Operations | partially implemented / pending | Safe API problem responses include correlation IDs. Configure structured redacted logs, monitoring, alerting, and production exception review. |
 | Backups and recovery | Operations | pending | Define and exercise database, key, payment, and support recovery. |
 | Rate limiting | Backend/Operations | partially implemented / pending | Authentication and device check-in are rate limited. Add suitable limits to other sensitive mutations and review partitioning. |

@@ -17,7 +17,7 @@ public sealed class PaystackOptions
 public sealed class DeviceOptions
 {
     public const string Section = "Device";
-    /// <summary>Shared secret the PHP/HTTP relay sends in X-Relay-Secret. Required.</summary>
+    /// <summary>Optional shared secret for a trusted relay using X-Relay-Secret. Direct devices must use HTTPS and their per-device key.</summary>
     public string RelaySecret { get; set; } = string.Empty;
 }
 

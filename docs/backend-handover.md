@@ -29,13 +29,13 @@ Support tickets now persist with customer ownership checks, customer conversatio
 
 - Confirm supported controller/relay protocol, telemetry units and reporting cadence, offline thresholds, credential provisioning/rotation, and ownership recovery with the hardware team.
 - Keep remote pump locking disabled until product approval and device-side interlocks, command expiry, replay protection, and safe-failure behavior are verified in firmware.
-- Create and review production EF migrations; Development currently uses SQLite `EnsureCreated`.
-- Configure production secrets, PostgreSQL, HTTPS/proxy settings, a persistent protected Data Protection key store, logging/monitoring, backups, recovery, and deployment health checks.
+- A PostgreSQL baseline migration is now checked in under `Data/Migrations/Postgres`; apply it to a provisioned database before production startup. Development continues to use SQLite `EnsureCreated`.
+- Configure production secrets, PostgreSQL, HTTPS/proxy settings, a persistent protected Data Protection key store, logging/monitoring, backups, recovery, and deployment health checks. See `deployment/README.md`.
 - Extend rate limiting beyond the current authentication and device check-in policies to sensitive mutations as appropriate.
 
 ## Verification before production
 
-Run a clean build and focused integration/security checks for registration and confirmation, resend confirmation, password reset/change, email change, role authorization, cross-customer access, antiforgery, device claim conflicts, telemetry freshness, alert acknowledgement, payment idempotency/webhook verification, and production database migrations. Test SMTP delivery and link expiry with the chosen mail provider. Review accessible customer pages at desktop and mobile sizes. Do not enable remote pump controls as part of this work.
+Run a clean build and focused integration/security checks for registration and confirmation, resend confirmation, password reset/change, email change, role authorization, cross-customer access, antiforgery, device claim conflicts, telemetry freshness, alert acknowledgement, payment idempotency/webhook verification, and apply/restore the production PostgreSQL migration on a staging database. Test SMTP delivery and link expiry with the chosen mail provider. Review accessible customer pages at desktop and mobile sizes. Do not enable remote pump controls as part of this work.
 
 ## Development configuration
 

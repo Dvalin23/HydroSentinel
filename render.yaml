@@ -1,0 +1,57 @@
+databases:
+  - name: hydrosentinel-db
+    region: frankfurt
+    plan: basic-256mb
+    databaseName: hydrosentinel
+    user: hydrosentinel
+    ipAllowList: []
+
+services:
+  - type: web
+    name: hydrosentinel
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    preDeployCommand: ./efbundle
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        value: "true"
+      - key: Database__Provider
+        value: Postgres
+      - key: ConnectionStrings__Default
+        fromDatabase:
+          name: hydrosentinel-db
+          property: connectionString
+      - key: Demo__Enabled
+        value: "false"
+      - key: Features__RemoteLockEnabled
+        value: "false"
+      - key: Email__SmtpHost
+        sync: false
+      - key: Email__SmtpPort
+        value: "587"
+      - key: Email__SmtpUsername
+        sync: false
+      - key: Email__SmtpPassword
+        sync: false
+      - key: Email__FromAddress
+        sync: false
+      - key: Seed__AdminEmail
+        sync: false
+      - key: Seed__AdminPassword
+        sync: false
+      - key: Paystack__SecretKey
+        sync: false
+      - key: Paystack__PlanCodes__Basic
+        sync: false
+      - key: Paystack__PlanCodes__Pro
+        sync: false
+      - key: Paystack__PlanCodes__Max
+        sync: false
+      - key: Device__RelaySecret
+        generateValue: true

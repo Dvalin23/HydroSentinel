@@ -18,13 +18,31 @@ public static class Startup
         services.Configure<FeatureOptions>(cfg.GetSection(FeatureOptions.Section));
         services.Configure<SeedOptions>(cfg.GetSection(SeedOptions.Section));
         services.Configure<EmailOptions>(cfg.GetSection(EmailOptions.Section));
+        services.PostConfigure<EmailOptions>(o =>
+        {
+            if (string.IsNullOrWhiteSpace(o.PublicBaseUrl))
+                o.PublicBaseUrl = cfg["RENDER_EXTERNAL_URL"] ?? string.Empty;
+        });
+        services.PostConfigure<PaystackOptions>(o =>
+        {
+            if (string.IsNullOrWhiteSpace(o.PublicBaseUrl))
+                o.PublicBaseUrl = cfg["RENDER_EXTERNAL_URL"] ?? string.Empty;
+        });
 
         // Provider: "Sqlite" (default, dev) or "Postgres" (prod). Connection string: ConnectionStrings:Default
         var provider = cfg["Database:Provider"] ?? "Sqlite";
-        var conn = cfg.GetConnectionString("Default") ?? "Data Source=hydrosentinel.db";
+        var configuredConnection = cfg.GetConnectionString("Default");
+        var conn = configuredConnection ?? "Data Source=hydrosentinel.db";
+        if (!builder.Environment.IsDevelopment())
+        {
+            if (!provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Production requires Database:Provider=Postgres.");
+            if (string.IsNullOrWhiteSpace(configuredConnection))
+                throw new InvalidOperationException("Production requires ConnectionStrings:Default from the deployment secret store.");
+        }
         services.AddDbContext<AppDbContext>(o =>
         {
-            if (provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)) o.UseNpgsql(conn);
+            if (provider.Equals("Postgres", StringComparison.OrdinalIgnoreCase)) o.UseNpgsql(AppDbContextFactory.NormalizePostgresConnectionString(conn));
             else o.UseSqlite(conn);
         });
 
@@ -113,12 +131,20 @@ public static class Startup
         var sp = scope.ServiceProvider;
         var db = sp.GetRequiredService<AppDbContext>();
 
-        // Production: run `dotnet ef database update` from a migration instead.
-        if (app.Environment.IsDevelopment()) await db.Database.EnsureCreatedAsync();
-
-        // The project predates an EF migration baseline. Create the additive support tables
-        // idempotently so existing development databases can use the new feature immediately.
-        await EnsureSupportTablesAsync(db, app.Configuration["Database:Provider"] ?? "Sqlite");
+        if (app.Environment.IsDevelopment())
+        {
+            // Local development keeps its SQLite database and uses EnsureCreated for convenience.
+            await db.Database.EnsureCreatedAsync();
+            // Preserve compatibility with existing local databases created before these models
+            // were introduced. Production schema is managed exclusively by EF migrations.
+            await EnsureSupportTablesAsync(db, app.Configuration["Database:Provider"] ?? "Sqlite");
+        }
+        else
+        {
+            var pending = await db.Database.GetPendingMigrationsAsync();
+            if (pending.Any())
+                throw new InvalidOperationException("The production database is missing EF migrations. Apply the checked-in PostgreSQL migration before starting HydroSentinel.");
+        }
 
         var roles = sp.GetRequiredService<RoleManager<IdentityRole>>();
         foreach (var r in new[] { Roles.Admin, Roles.Customer })

@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
+using HydroSentinel.Data;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using HydroSentinel.Backend;
 using HydroSentinel.Services;
 
@@ -39,12 +43,23 @@ builder.Services.AddRazorPages(options =>
     }
 });
 builder.AddBackend();
+if (!builder.Environment.IsDevelopment())
+{
+    // Login/antiforgery cookies must remain decryptable after deploys and restarts.
+    builder.Services.AddDataProtection().PersistKeysToDbContext<AppDbContext>();
+}
 builder.Services.AddSingleton<PlanCatalog>();
 builder.Services.AddSingleton<IFormTestingMode, FormTestingMode>();
 builder.Services.AddSingleton<IDemoMode, DemoMode>();
 builder.Services.AddSingleton<IAdminPortalProjection, AdminPortalProjection>();
 
 var app = builder.Build();
+
+if (!app.Environment.IsDevelopment())
+{
+    // Render terminates TLS at its edge and forwards the original scheme.
+    app.UseForwardedHeaders();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -65,6 +80,19 @@ app.UseAuthorization();
 await app.InitialiseBackendAsync();
 
 app.MapBackend();
+app.MapGet("/healthz", async (AppDbContext db, CancellationToken cancellationToken) =>
+{
+    try
+    {
+        return await db.Database.CanConnectAsync(cancellationToken)
+            ? Results.Ok(new { status = "ok" })
+            : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+    catch
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+}).AllowAnonymous();
 app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();

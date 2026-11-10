@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace HydroSentinel.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser>(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser>(options), IDataProtectionKeyContext
 {
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<Reading> Readings => Set<Reading>();
     public DbSet<DeviceEvent> DeviceEvents => Set<DeviceEvent>();
@@ -39,30 +41,42 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.HasIndex(x => x.OwnerId);
             e.Property(x => x.Serial).HasMaxLength(64);
             e.Property(x => x.KeyHash).HasMaxLength(64);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.OwnerId).OnDelete(DeleteBehavior.SetNull);
         });
 
         b.Entity<Reading>(e =>
         {
             e.HasIndex(x => new { x.DeviceId, x.At });
+            e.HasOne<Device>().WithMany().HasForeignKey(x => x.DeviceId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<DeviceEvent>(e =>
         {
             e.HasIndex(x => new { x.DeviceId, x.At });
+            e.HasOne<Device>().WithMany().HasForeignKey(x => x.DeviceId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<Subscription>(e =>
         {
             e.HasIndex(x => x.UserId).IsUnique(); // one subscription per customer
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<Payment>(e =>
         {
             e.HasIndex(x => x.Reference).IsUnique();
+            e.HasIndex(x => new { x.UserId, x.CreatedAt });
             // Same customer + same idempotency key must resolve to the same payment.
             e.HasIndex(x => new { x.UserId, x.IdempotencyKey }).IsUnique();
             e.Property(x => x.Reference).HasMaxLength(64);
             e.Property(x => x.IdempotencyKey).HasMaxLength(100);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        b.Entity<AuditEntry>(e =>
+        {
+            e.HasIndex(x => x.At);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.ActorId).OnDelete(DeleteBehavior.SetNull);
         });
 
         b.Entity<SupportTicket>(e =>
@@ -75,6 +89,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.Property(x => x.Category).HasMaxLength(80);
             e.Property(x => x.Status).HasMaxLength(32);
             e.HasMany(x => x.Messages).WithOne().HasForeignKey(x => x.TicketId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Device>().WithMany().HasForeignKey(x => x.DeviceId).OnDelete(DeleteBehavior.SetNull);
         });
 
         b.Entity<SupportMessage>(e =>
@@ -82,6 +98,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.HasIndex(x => new { x.TicketId, x.CreatedAt });
             e.Property(x => x.AuthorId).HasMaxLength(450);
             e.Property(x => x.Body).HasMaxLength(4000);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.AuthorId).OnDelete(DeleteBehavior.SetNull);
         });
 
         b.Entity<RecurringBillingAgreement>(e =>
@@ -102,6 +119,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.Property(x => x.IdempotencyKey).HasMaxLength(100);
             e.Property(x => x.CardBrand).HasMaxLength(32);
             e.Property(x => x.CardLast4).HasMaxLength(4);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<RecurringBillingTransaction>(e =>
@@ -117,6 +135,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.Property(x => x.Channel).HasMaxLength(32);
             e.Property(x => x.RefundStatus).HasMaxLength(32);
             e.Property(x => x.RefundReference).HasMaxLength(64);
+            e.HasOne<RecurringBillingAgreement>().WithMany().HasForeignKey(x => x.AgreementId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<CustomerNotification>(e =>
@@ -130,6 +150,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             e.Property(x => x.Category).HasMaxLength(40);
             e.Property(x => x.Destination).HasMaxLength(240);
             e.Property(x => x.DedupeKey).HasMaxLength(160);
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

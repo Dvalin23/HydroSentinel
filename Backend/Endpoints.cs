@@ -43,14 +43,17 @@ public static class Endpoints
 
     // ---------------------------------------------------------------- device check-in
     // GET /api/device/checkin?id=&k=&w=&p=&m=&f=&lk=&b=&s=
-    // Called by the HTTP relay (the SIM800L cannot do TLS). Response: "OK,<lock 0|1>,<unix time>" or "ERR".
+    // Accepts a trusted relay (X-Relay-Secret) or direct HTTPS using the per-device key.
+    // Response: "OK,<lock 0|1>,<unix time>" or "ERR".
     private static void MapDevice(WebApplication app)
     {
         app.MapGet("/api/device/checkin", async (HttpContext http, CheckInService svc, IOptions<DeviceOptions> opt, ILogger<CheckInService> log, CancellationToken ct) =>
         {
             var q = http.Request.Query;
-            // Relay authenticates itself; unknown callers learn nothing.
-            if (!DeviceKeys.SecretMatches(http.Request.Headers["X-Relay-Secret"].ToString(), opt.Value.RelaySecret))
+            // Legacy relay requests authenticate with the shared relay secret. Direct device
+            // requests must use HTTPS so the per-device key in the query string is encrypted.
+            var relayAuthenticated = DeviceKeys.SecretMatches(http.Request.Headers["X-Relay-Secret"].ToString(), opt.Value.RelaySecret);
+            if (!relayAuthenticated && !http.Request.IsHttps)
                 return Results.Text("ERR", "text/plain", Encoding.ASCII, 401);
 
             string id = q["id"].ToString(), k = q["k"].ToString(), w = q["w"].ToString();
