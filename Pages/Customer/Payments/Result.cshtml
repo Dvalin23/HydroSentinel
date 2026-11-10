@@ -7,7 +7,13 @@
     var lp = Model.LivePayment;
     <section class="billing-page"><div class="billing-intro"><div><p class="customer-eyebrow">PAYMENT RESULT</p><h2>Payment status</h2><p class="customer-lede">Status shown here comes from our server after checking with Paystack, not from the page you were redirected from.</p></div></div>
     <article class="result-panel billing-panel" role="status">
-    @if (lp is null) { <h3>Payment not found</h3><p>We could not find that payment on your account.</p> }
+    @if (lp is null && Model.RecurringTransaction is { } recurring)
+    {
+        <div class="result-mark" aria-hidden="true">@(recurring.Status == "success" ? "✓" : "!")</div>
+        <h3>@(recurring.Status == "success" ? "Card verified; refund requested" : Model.UnableToVerify ? "Waiting for Paystack confirmation" : "Card verification status")</h3>
+        <p>Reference @recurring.Reference · card verification ₦@((recurring.AmountMinor / 100m).ToString("N2")) · refund status: @(recurring.RefundStatus ?? "pending"). A processed refund can take up to 10 business days to appear. Your recurring subscription status is shown in Subscription.</p>
+    }
+    else if (lp is null) { <h3>Payment not found</h3><p>We could not find that payment on your account.</p> }
     else if (lp.Status == "success") { <div class="result-mark" aria-hidden="true">✓</div><h3>Payment confirmed</h3><p>Reference @lp.Reference · ₦@((lp.AmountMinor / 100m).ToString("N0")) @lp.Currency · your subscription has been extended.</p> }
     else if (lp.Status == "pending") { <h3>@(Model.UnableToVerify ? "We could not reach Paystack to confirm this yet" : "Waiting for confirmation")</h3><p>Reference @lp.Reference. Nothing has been activated. Refresh in a minute; if you were charged, it will be applied when Paystack confirms it.</p> }
     else { <h3>Payment not completed</h3><p>Reference @lp.Reference · status: @lp.Status. Your subscription was not changed.</p> }

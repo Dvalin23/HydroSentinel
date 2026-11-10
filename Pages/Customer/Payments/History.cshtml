@@ -11,14 +11,14 @@
         <div>
             <p class="customer-eyebrow">BILLING RECORDS</p>
             <h2>Payment history</h2>
-            <p class="customer-lede">Every checkout attempt on this account, including ones that failed verification.</p>
+            <p class="customer-lede">Monthly charges and card verification refunds are listed here.</p>
         </div>
         <span class="billing-state billing-state-success"><i></i>Verified server-side</span>
     </div>
 
     <div class="history-table billing-panel">
         <div class="customer-section-heading">
-            <div><p class="billing-kicker">Transactions</p><h3>@(Model.Payments.Count == 1 ? "1 payment" : $"{Model.Payments.Count} payments")</h3></div>
+            <div><p class="billing-kicker">Previous checkout records</p><h3>@(Model.Payments.Count == 1 ? "1 payment" : $"{Model.Payments.Count} payments")</h3></div>
             <a class="billing-text-link" asp-page="/Customer/Subscription/Index">Subscription &rarr;</a>
         </div>
         @if (Model.Payments.Count == 0)
@@ -46,6 +46,19 @@
                     </tbody>
                 </table>
             </div>
+        }
+    </div>
+    <div class="history-table billing-panel">
+        <div class="customer-section-heading"><div><p class="billing-kicker">Automatic billing</p><h3>@(Model.RecurringTransactions.Count == 1 ? "1 transaction" : $"{Model.RecurringTransactions.Count} transactions")</h3></div></div>
+        @if (Model.RecurringTransactions.Count == 0) { <p class="device-state-callout">No recurring billing transactions yet.</p> }
+        else
+        {
+            <div class="comparison-table-wrap"><table class="comparison-table"><thead><tr><th>Reference</th><th>Date</th><th>Plan</th><th>Type</th><th>Amount</th><th>Payment</th><th>Refund</th></tr></thead><tbody>
+            @foreach (var payment in Model.RecurringTransactions)
+            {
+                <tr><td>@payment.Reference</td><td>@payment.CreatedAt.LocalDateTime.ToString("g")</td><td>@payment.PlanId</td><td>@(payment.Kind == "card_verification" ? "Card verification" : "Monthly renewal")</td><td>₦@((payment.AmountMinor / 100m).ToString("N2"))</td><td>@payment.Status</td><td>@(payment.Kind == "card_verification" ? payment.RefundStatus ?? "Not refunded" : "—")</td></tr>
+            }
+            </tbody></table></div>
         }
     </div>
 </section>

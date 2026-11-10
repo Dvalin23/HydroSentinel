@@ -8,6 +8,10 @@ public sealed class PaystackOptions
     public string BaseUrl { get; set; } = "https://api.paystack.co";
     /// <summary>Public origin used to build the callback URL, e.g. https://portal.example.com</summary>
     public string PublicBaseUrl { get; set; } = string.Empty;
+    public Dictionary<string, string> PlanCodes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public string? PlanCodeFor(string planId)
+        => PlanCodes.TryGetValue(planId, out var code) && !string.IsNullOrWhiteSpace(code) ? code.Trim() : null;
 }
 
 public sealed class DeviceOptions

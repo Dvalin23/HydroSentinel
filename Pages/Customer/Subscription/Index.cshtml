@@ -55,6 +55,23 @@
         </aside>
     </div>
 
+    @if (Model.BillingAgreement is { } agreement)
+    {
+        <article class="billing-panel">
+            <p class="billing-kicker">Automatic renewal</p>
+            <h3>@agreement.Status.Replace('_', ' ')</h3>
+            <p class="billing-muted">@(agreement.CardBrand is null ? "Card details are managed securely by Paystack." : $"{agreement.CardBrand} ending in {agreement.CardLast4}")</p>
+            @if (agreement.TrialEndsAt is not null) { <p>Trial ends @agreement.TrialEndsAt.Value.LocalDateTime.ToString("f").</p> }
+            @if (agreement.NextPaymentAt is not null) { <p>Next scheduled charge: @agreement.NextPaymentAt.Value.LocalDateTime.ToString("d") · ₦@(Model.CurrentPlan?.MonthlyPrice.ToString("N0") ?? "—") monthly.</p> }
+            @if (agreement.Status is "active" or "trialing" or "non_renewing" or "past_due")
+            {
+                <form method="post" asp-page-handler="Manage"><button class="customer-button customer-button-secondary" type="submit">Manage or cancel with Paystack</button></form>
+                <p class="billing-help">Cancellation stops the next renewal. Access continues through the paid period; failed renewals keep the 3-day grace period.</p>
+            }
+            @if (Model.BillingMessage is not null) { <p role="alert">@Model.BillingMessage</p> }
+        </article>
+    }
+
     <div class="billing-link-row">
         <a asp-page="/Customer/Payments/History">Payment history &rarr;</a>
         <a asp-page="/Customer/Support/Index">Ask about billing &rarr;</a>

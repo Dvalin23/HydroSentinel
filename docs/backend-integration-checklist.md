@@ -32,21 +32,21 @@ Status values: **implemented**, **pending**, **blocked**, or **requires confirma
 | Requirement | Responsible area | Status | Evidence / remaining work |
 |---|---|---|---|
 | Approved plan catalogue and pricing | Product/Backend | requires confirmation | Plan catalog is centralized and used server-side. Confirm commercial prices, allowances, billing terms, currency, taxes, and eligibility. |
-| Subscription persistence and lifecycle | Backend | implemented / requires confirmation | Subscription/trial lifecycle and state projection exist. Confirm trial length, 30-day billing increments, grace period, cancellation, and access policy. |
-| Server-side payment initialization | Backend | implemented | Checkout prices from the server catalog; client submits plan, months, and idempotency key. Verify behavior in the intended environment. |
-| Paystack transaction verification | Backend | implemented / pending | Reference, amount, and currency are checked through Paystack before settlement. Sandbox integration verification remains. |
-| Authenticated and idempotent webhooks | Backend/Operations | implemented / pending | Webhook signature validation and settlement idempotency exist. Confirm configured endpoint, provider retries, and live operational monitoring. |
-| Payment history and receipts | Backend | partially implemented | Customer-scoped payment history and reference lookup exist. Receipt delivery/download is not implemented. |
-| Subscription activation after verified payment | Backend | implemented / pending | Settlement activates/extends subscription after verification; exercise success, failure, retry, duplicate, and provider-unavailable cases. |
-| Billing authorization and access rules | Backend | pending | Ownership checks exist, but cancellation/refund/plan-change workflows and final business access rules need product decisions. |
+| Subscription persistence and lifecycle | Backend | implemented / pending sandbox | Monthly recurring agreements and ledger exist; first-device trial stays 7 days, renewal extends by calendar month, failed renewal keeps 3-day grace, and cancellation retains paid-through access. Sandbox event flow still needs verification. |
+| Server-side payment initialization | Backend | implemented / pending configuration | Customer consents to NGN 50 card verification; server validates a matching monthly plan code and creates the checkout. Configure three test plan codes and exercise with a Paystack test account. |
+| Paystack transaction verification and verification refund | Backend | implemented / pending sandbox | Reusable card authorization, amount/currency, refund request, and refund event statuses are tracked. Verify sandbox processing and refund edge cases. |
+| Authenticated and idempotent webhooks | Backend/Operations | implemented / pending | Signature validation handles charge, subscription status, invoice failure, and refund events. Confirm configured endpoint, provider retries, and live operational monitoring. |
+| Payment history and receipts | Backend | partially implemented | Customer-scoped one-off and recurring transactions/refund statuses are listed. Receipt delivery/download is not implemented. |
+| Subscription activation after verified payment | Backend | implemented / pending sandbox | Delayed monthly subscription is created after reusable card verification, scheduled at the trial or paid-through date. Exercise success, failure, retry, duplicate, and provider-unavailable cases. |
+| Billing authorization and access rules | Backend/Product | implemented / requires confirmation | Terms checkbox, Paystack hosted manage/cancel flow, paid-through access, and 3-day grace are coded. Publish final commercial terms and verify cancellation/refund behavior in sandbox. |
 
 ## D. Support and notifications
 
 | Requirement | Responsible area | Status | Evidence / remaining work |
 |---|---|---|---|
 | Ticket creation, ownership, replies and status transitions | Backend/Support | implemented / pending verification | Customer-owned tickets and conversations persist; customers can reply, admins can reply and change status, and mutations are audited. A build passes; exercise cross-customer denial and staff workflow before production. Attachments and customer email notifications are not included. |
-| Notification delivery and persistence | Backend/Operations | pending | No notification store or delivery integration. |
-| Read/unread state | Backend | pending | No persisted notification read state. |
+| In-app notification persistence | Backend | implemented / pending runtime verification | Customer-owned records persist for device warnings and critical events, staff ticket replies, and payment/subscription lifecycle updates. External email/SMS/push delivery is not connected. |
+| Read/unread state | Backend | implemented / pending runtime verification | Customer inbox lists only the signed-in user's records and supports marking one or all as read. Database indexes support owner/time and owner/read queries. |
 | Supported notification preferences | Product/Backend | requires confirmation | Controls remain unavailable outside development validation mode; approve channels and safety rules first. |
 | Approved Help Centre articles | Product/Support | pending | Search/content shell exists; approved article catalogue is not connected. |
 | Attachments | Backend/Operations | requires confirmation | Not implemented; define scanning, storage, authorization, retention, and download controls first. |

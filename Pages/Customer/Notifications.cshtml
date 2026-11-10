@@ -1,7 +1,51 @@
 @page
-@using HydroSentinel.Services
-@inject IDemoMode DemoMode
+@model HydroSentinel.Pages.Customer.NotificationsModel
 @{ Layout = "_CustomerLayout"; ViewData["Title"] = "Notifications"; }
 @section Styles { <link rel="stylesheet" href="~/css/customer-account-support.css" asp-append-version="true" /> }
-<section class="stage7-intro"><div><p class="customer-eyebrow">Activity centre</p><h2>Notifications that need your attention.</h2><p class="customer-lede">These records are fictional demonstration content and remain temporary.</p></div><span class="customer-status-badge"><span></span>Demo data</span></section>
-<section class="stage7-panel"><div class="stage7-panel-head"><div><h3>Your notifications</h3><p>DEMONSTRATION ONLY — temporary in-memory records.</p></div><form method="post"><button type="submit" class="customer-button customer-button-secondary" asp-page-handler="ReadAll">Mark all as read</button></form></div><div class="stage7-panel-body stage7-stack">@foreach (var item in DemoMode.Snapshot.Notifications) { <a class="stage7-link-row @(item.IsRead ? "" : "is-unread")" href="@(item.Destination ?? "#")"><span><strong>@item.Title</strong><small>@item.Message · @item.Created.LocalDateTime.ToString("g")</small></span><em>@(item.IsRead ? "Read" : "Unread")</em></a> }</div></section>
+<section class="stage7-intro">
+    <div>
+        <p class="customer-eyebrow">Activity centre</p>
+        <h2>Notifications that need your attention.</h2>
+        <p class="customer-lede">Review account, device, support, and billing updates.</p>
+    </div>
+    <span class="customer-status-badge"><span></span>@(Model.DemoMode ? "Demo data" : "Account activity")</span>
+</section>
+<section class="stage7-panel">
+    <div class="stage7-panel-head">
+        <div><h3>Your notifications</h3><p>@Model.UnreadCount unread</p></div>
+        @if (Model.UnreadCount > 0)
+        {
+            <form method="post" asp-page-handler="ReadAll"><button type="submit" class="customer-button customer-button-secondary">Mark all as read</button></form>
+        }
+    </div>
+    <div class="stage7-panel-body stage7-stack">
+        @if (Model.Items.Count == 0)
+        {
+            <p class="stage7-note">You have no notifications yet.</p>
+        }
+        @foreach (var item in Model.Items)
+        {
+            <div class="stage7-link-row @(item.IsRead ? "" : "is-unread")">
+                <span>
+                    @if (!string.IsNullOrWhiteSpace(item.Destination) && Url.IsLocalUrl(item.Destination))
+                    {
+                        <a href="@item.Destination"><strong>@item.Title</strong></a>
+                    }
+                    else
+                    {
+                        <strong>@item.Title</strong>
+                    }
+                    <small>@item.Message · @item.CreatedAt.LocalDateTime.ToString("g") · @item.Category</small>
+                </span>
+                @if (item.IsRead)
+                {
+                    <em>Read</em>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Read" asp-route-id="@item.Id"><button type="submit" class="customer-button customer-button-secondary">Mark read</button></form>
+                }
+            </div>
+        }
+    </div>
+</section>

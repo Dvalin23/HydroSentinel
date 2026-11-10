@@ -20,7 +20,7 @@ public sealed class PlanCatalog
         new PlanDefinition("max", "Max", 749000m, 50000m, "More than 3 units", "For larger or more involved installations.")
     };
 
-    public const string OfferNote = "Flyer-supplied launch offer: 10% off + first month free; launching 15 November. Commercial terms require confirmation.";
+    public const string OfferNote = "The product flyer mentions a launch offer of 10% off plus the first month free. The offer is not applied at checkout; confirm its timing and eligibility with Firmlon.";
 
     public PlanDefinition? Find(string? id) => Plans.FirstOrDefault(plan => string.Equals(plan.Id, id, StringComparison.OrdinalIgnoreCase));
 }

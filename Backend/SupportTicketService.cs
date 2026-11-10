@@ -1,9 +1,10 @@
 using HydroSentinel.Data;
+using HydroSentinel.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace HydroSentinel.Backend;
 
-public sealed class SupportTicketService(AppDbContext db, AuditService audit)
+public sealed class SupportTicketService(AppDbContext db, AuditService audit, NotificationService notifications)
 {
     public async Task<List<SupportTicket>> CustomerTicketsAsync(string userId, CancellationToken ct = default)
         => await db.SupportTickets.AsNoTracking().Where(t => t.UserId == userId)
@@ -69,11 +70,14 @@ public sealed class SupportTicketService(AppDbContext db, AuditService audit)
         if (ticket is null) return false;
 
         var now = DateTimeOffset.UtcNow;
-        db.SupportMessages.Add(new SupportMessage { TicketId = ticket.Id, AuthorId = staffId, IsStaffReply = true, Body = message.Trim(), CreatedAt = now });
+        var reply = new SupportMessage { TicketId = ticket.Id, AuthorId = staffId, IsStaffReply = true, Body = message.Trim(), CreatedAt = now };
+        db.SupportMessages.Add(reply);
         if (ticket.Status != SupportTicketStatus.Resolved) ticket.Status = SupportTicketStatus.WaitingOnCustomer;
         ticket.UpdatedAt = now;
         await db.SaveChangesAsync(ct);
         await audit.WriteAsync(staffId, "support.ticket.staff_reply", ticket.Reference, null, ct);
+        await notifications.AddAsync(ticket.UserId, "Firmlon replied to your support request", $"There is a new reply on support request {ticket.Reference}.",
+            "Support", $"support-reply:{reply.Id}", $"/Customer/Support/Details?id={Uri.EscapeDataString(ticket.Reference)}", ct);
         return true;
     }
 

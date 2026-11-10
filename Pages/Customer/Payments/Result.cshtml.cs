@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HydroSentinel.Pages.Customer.Payments;
 
-public class ResultModel(IDemoMode demo, AppDbContext db, PaymentService payments) : PageModel
+public class ResultModel(IDemoMode demo, AppDbContext db, PaymentService payments, RecurringBillingService recurring) : PageModel
 {
     [BindProperty(SupportsGet = true, Name = "reference")]
     public string? Reference { get; set; }
@@ -21,6 +21,7 @@ public class ResultModel(IDemoMode demo, AppDbContext db, PaymentService payment
     /// <summary>Server-verified payment for the signed-in customer. Null if not theirs or not found.</summary>
     public HydroSentinel.Data.Payment? LivePayment { get; private set; }
     public bool UnableToVerify { get; private set; }
+    public RecurringBillingTransaction? RecurringTransaction { get; private set; }
 
     public async Task OnGetAsync(CancellationToken ct)
     {
@@ -29,7 +30,16 @@ public class ResultModel(IDemoMode demo, AppDbContext db, PaymentService payment
         if (uid is null) return;
 
         var p = await db.Payments.AsNoTracking().FirstOrDefaultAsync(x => x.Reference == Reference && x.UserId == uid, ct);
-        if (p is null) return;
+        if (p is null)
+        {
+            RecurringTransaction = await db.RecurringBillingTransactions.AsNoTracking().FirstOrDefaultAsync(x => x.Reference == Reference && x.UserId == uid, ct);
+            if (RecurringTransaction is { Status: PaymentStatus.Pending })
+            {
+                UnableToVerify = await recurring.SettleReferenceAsync(Reference!, ct) == false;
+                RecurringTransaction = await db.RecurringBillingTransactions.AsNoTracking().FirstOrDefaultAsync(x => x.Reference == Reference && x.UserId == uid, ct);
+            }
+            return;
+        }
         if (p.Status == PaymentStatus.Pending)
         {
             var outcome = await payments.VerifyAndSettleAsync(p.Reference, ct);

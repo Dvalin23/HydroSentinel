@@ -6,7 +6,7 @@ The repository now contains a working backend implementation in code; this is no
 
 Customer account services now include confirmed registration, email-change confirmation, password reset/change, and persisted name/phone updates. Email sending uses MailKit over SMTP STARTTLS; the user configured Gmail locally and confirmed the account email flow works. Other environments must provide their own SMTP credentials and public HTTPS origin. The latest build succeeds with zero warnings and errors. Treat this as repository evidence, not a production-readiness or security sign-off.
 
-Support tickets now persist with customer ownership checks, customer conversation replies, an authenticated admin queue, staff replies, controlled status updates, and audit entries. A build passed; the new runtime flow still needs customer-isolation and staff-workflow verification. Notifications/email alerts, attachments, and reviewed production database migrations remain outstanding.
+Support tickets now persist with customer ownership checks, customer conversation replies, an authenticated admin queue, staff replies, controlled status updates, and audit entries. Persistent in-app notifications now cover device warnings and critical events, staff ticket replies, and billing/payment lifecycle updates. The customer inbox supports owner-scoped read/unread state and marking individual or all notifications read. Notifications remain in-app only; email/SMS/push alerts and delivery preferences need policy decisions. A build passed; the ticket runtime flow still needs customer-isolation and staff-workflow verification. Attachments and reviewed production database migrations remain outstanding.
 
 ## Remaining work
 
@@ -14,14 +14,16 @@ Support tickets now persist with customer ownership checks, customer conversatio
 
 - Confirm SMTP configuration and deliverability in the target environment. New registrations require email confirmation; password reset and email change use expiring Identity tokens.
 - Review existing unconfirmed accounts after enabling required email confirmation. They can request a confirmation link, but cannot sign in until they confirm.
-- Notifications and approved Help Centre content remain disabled or validation-only shells. Support tickets are implemented in code; production database migrations and workflow verification remain outstanding.
+- In-app notifications are persisted and customer-scoped. Email/SMS/push delivery and notification preferences remain pending policy approval; approved Help Centre content remains outstanding. Support tickets are implemented in code; production database migrations and workflow verification remain outstanding.
 - Product must approve the customer/tenant model, MFA policy, session invalidation behavior, and publish the Terms of Service and Privacy Policy referenced during registration.
 
 ### Product and billing decisions
 
-- Confirm plan catalogue, currency/prices, billing periods, trial length, grace period, covered-device rules, taxes, refund/cancellation behavior, and subscription access policy. Current plan prices come from the product flyer; lifecycle durations are documented as provisional.
-- Validate Paystack credentials, callback/public URL, webhook delivery, and reconciliation in the intended sandbox before production use.
-- Receipts and refunds are not implemented as a customer workflow.
+- User decisions for billing: monthly automatic renewal only; retain flyer prices in sandbox; keep the existing 7-day trial using a disclosed NGN 50.00 card verification charge with an immediate refund request; cancel before renewal while preserving access through the paid period; keep the 3-day grace period; defer the flyer promotion until its terms are confirmed.
+- Recurring Paystack code is implemented in `Backend/RecurringBillingService.cs`; customer checkout, status, manage/cancel link, payment history, and subscription/refund webhooks are wired. It has only been compiled; sandbox checkout, renewal and refund delivery still need to be exercised.
+- Create separate Basic/Pro/Max monthly plans in Paystack Test Mode at NGN 5,000, NGN 15,000, and NGN 50,000, with no invoice limit. Configure their plan codes in local user-secrets. Production needs separate live plan codes.
+- Development payment requests require a test secret key and `Demo:Enabled=false`; production requires a live secret key. A public HTTPS webhook host is required for Paystack to reach `/api/paystack/webhook`; configure charge, subscription, invoice failure, and refund events.
+- Customer-facing receipt delivery/download is not implemented. Review refund handling and final commercial/legal terms before live processing.
 
 ### Hardware and operations
 

@@ -154,3 +154,68 @@ public class SupportMessage
     public string Body { get; set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
+
+public static class RecurringBillingStatus
+{
+    public const string PendingCard = "pending_card";
+    public const string Finalizing = "finalizing";
+    public const string Trialing = "trialing";
+    public const string Active = "active";
+    public const string NonRenewing = "non_renewing";
+    public const string PastDue = "past_due";
+    public const string Cancelled = "cancelled";
+    public const string Failed = "failed";
+}
+
+public class RecurringBillingAgreement
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string UserId { get; set; } = string.Empty;
+    public string PlanId { get; set; } = string.Empty;
+    public string PaystackPlanCode { get; set; } = string.Empty;
+    public string? PaystackCustomerCode { get; set; }
+    public string? PaystackSubscriptionCode { get; set; }
+    public string Status { get; set; } = RecurringBillingStatus.PendingCard;
+    public string? VerificationReference { get; set; }
+    public string IdempotencyKey { get; set; } = string.Empty;
+    public string? CardBrand { get; set; }
+    public string? CardLast4 { get; set; }
+    public DateTimeOffset? TrialEndsAt { get; set; }
+    public DateTimeOffset? NextPaymentAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+}
+
+public class RecurringBillingTransaction
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Reference { get; set; } = string.Empty;
+    public Guid AgreementId { get; set; }
+    public string UserId { get; set; } = string.Empty;
+    public string PlanId { get; set; } = string.Empty;
+    public string Kind { get; set; } = "card_verification";
+    public long AmountMinor { get; set; }
+    public string Currency { get; set; } = "NGN";
+    public string Status { get; set; } = PaymentStatus.Pending;
+    public string? Channel { get; set; }
+    public string? RefundStatus { get; set; }
+    public string? RefundReference { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? PaidAt { get; set; }
+}
+
+public class CustomerNotification
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string UserId { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public bool IsRead { get; set; }
+    public DateTimeOffset? ReadAt { get; set; }
+    /// <summary>Same-origin customer page only; external destinations are rejected by NotificationService.</summary>
+    public string? Destination { get; set; }
+    /// <summary>Stable source event key so retries do not create duplicate notifications.</summary>
+    public string DedupeKey { get; set; } = string.Empty;
+}

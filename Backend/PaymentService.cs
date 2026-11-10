@@ -11,7 +11,7 @@ public enum SettleOutcome { Activated, AlreadyProcessed, StillPending, Failed, A
 public sealed record CheckoutResult(bool Ok, int Status, string? Code, string? Message, string? Reference, string? PaymentStatus, string? RedirectUrl, bool Replay);
 
 public sealed class PaymentService(AppDbContext db, PaystackClient paystack, PlanCatalog catalog, AuditService audit,
-    UserManager<ApplicationUser> users, IOptions<PaystackOptions> popt)
+    UserManager<ApplicationUser> users, IOptions<PaystackOptions> popt, NotificationService notifications)
 {
     /// <summary>
     /// Verify with Paystack, then settle exactly once. Used by both the browser callback/lookup and the webhook,
@@ -80,6 +80,8 @@ public sealed class PaymentService(AppDbContext db, PaystackClient paystack, Pla
         await db.SaveChangesAsync(ct);
         await tx.CommitAsync(ct);
         await audit.WriteAsync(payment.UserId, "payment.success", reference, $"plan={payment.PlanId} months={payment.Months}", ct);
+        await notifications.AddAsync(payment.UserId, "Payment confirmed", $"Your {catalog.Find(payment.PlanId)?.Name ?? "plan"} subscription has been extended.",
+            "Billing", $"payment-success:{reference}", "/Customer/Subscription", ct);
         return SettleOutcome.Activated;
     }
 

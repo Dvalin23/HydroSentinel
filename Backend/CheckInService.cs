@@ -1,4 +1,5 @@
 using HydroSentinel.Data;
+using HydroSentinel.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -8,7 +9,7 @@ public sealed record CheckInInput(string Serial, string Key, string? Water, bool
 public sealed record CheckInResult(bool Authenticated, bool Lock);
 
 /// <summary>Handles one controller check-in: authenticate, store, diff into events, and answer with the lock state.</summary>
-public sealed class CheckInService(AppDbContext db, IOptions<FeatureOptions> features)
+public sealed class CheckInService(AppDbContext db, IOptions<FeatureOptions> features, NotificationService notifications)
 {
     private static string? LevelOf(string? w) => w?.ToUpperInvariant() switch { "L" => "low", "M" => "mid", "F" => "full", _ => null };
 
@@ -78,6 +79,23 @@ public sealed class CheckInService(AppDbContext db, IOptions<FeatureOptions> fea
         });
         db.DeviceEvents.AddRange(events);
         await db.SaveChangesAsync(ct);
+        if (!string.IsNullOrWhiteSpace(device.OwnerId))
+        {
+            foreach (var ev in events.Where(x => x.Severity is "warning" or "critical"))
+            {
+                var title = ev.Type switch
+                {
+                    "tank_low" => "Water level is low",
+                    "mains_lost" => "Mains power was lost",
+                    "battery_low" => "Device battery is low",
+                    "fault" => "A device fault needs attention",
+                    "pump_locked" => "Pump lock reported",
+                    _ => "Device alert"
+                };
+                await notifications.AddAsync(device.OwnerId, title, $"{device.Name} needs your attention.", "Device alert",
+                    $"device-event:{ev.Id}", $"/Customer/Alerts/Details?id={ev.Id}", ct);
+            }
+        }
         return new CheckInResult(true, wantLock);
     }
 }

@@ -6,7 +6,7 @@ using HydroSentinel.Services;
 
 namespace HydroSentinel.Pages.Customer.Payments;
 
-public class CheckoutModel(IDemoMode demo, PlanCatalog catalog, PaymentService payments) : PageModel
+public class CheckoutModel(IDemoMode demo, PlanCatalog catalog, RecurringBillingService recurring) : PageModel
 {
     [BindProperty(SupportsGet = true, Name = "plan")]
     public string? Plan { get; set; }
@@ -16,10 +16,11 @@ public class CheckoutModel(IDemoMode demo, PlanCatalog catalog, PaymentService p
     // The amount is computed on the server from PlanCatalog and is never read from the request.
     [BindProperty] public int Months { get; set; } = 1;
     [BindProperty] public string IdempotencyKey { get; set; } = Guid.NewGuid().ToString("N");
+    [BindProperty] public bool AcceptedRecurringTerms { get; set; }
 
     public bool Live => !demo.Enabled;
     public PlanDefinition? SelectedPlan => catalog.Find(Plan);
-    public decimal LiveTotal => SelectedPlan is null ? 0 : SelectedPlan.MonthlyPrice * Math.Clamp(Months, 1, 12);
+    public decimal LiveTotal => SelectedPlan?.MonthlyPrice ?? 0;
     public string? Message { get; private set; }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
@@ -35,7 +36,7 @@ public class CheckoutModel(IDemoMode demo, PlanCatalog catalog, PaymentService p
         var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (uid is null) return Challenge();
 
-        var r = await payments.StartCheckoutAsync(uid, SelectedPlan.Id, Months, IdempotencyKey, $"{Request.Scheme}://{Request.Host}", ct);
+        var r = await recurring.StartAsync(uid, SelectedPlan.Id, IdempotencyKey, AcceptedRecurringTerms, $"{Request.Scheme}://{Request.Host}", ct);
         if (!r.Ok)
         {
             Message = r.Message;

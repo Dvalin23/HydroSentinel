@@ -14,9 +14,13 @@
             <h2 id="plans-heading">Choose the right level of support</h2>
             <p class="customer-lede">Hardware is sold separately. Checkout charges the monthly service fee only, priced on the server.</p>
         </div>
-        @if (Model.CheckoutReady)
+        @if (Model.DemoMode)
         {
-            <span class="billing-state billing-state-success"><i></i>Checkout ready</span>
+            <span class="billing-state billing-state-warning"><i></i>Simulated checkout</span>
+        }
+        else if (Model.CheckoutReady)
+        {
+            <span class="billing-state billing-state-success"><i></i>@(Model.TestCheckout ? "Paystack test checkout ready" : "Paystack checkout ready")</span>
         }
         else
         {
@@ -24,11 +28,18 @@
         }
     </div>
 
-    @if (!Model.CheckoutReady)
+    @if (Model.DemoMode)
     {
         <div class="catalog-notice" role="status">
             <span class="billing-notice-icon" aria-hidden="true">i</span>
-            <div><strong>Paystack keys are not set in this environment.</strong><p>Plans and prices are real, but starting a checkout will return a configuration error until <code>Paystack:SecretKey</code> is provided.</p></div>
+            <div><strong>Demo checkout is active.</strong><p>Plan checkout is simulated. No Paystack request or real charge will occur.</p></div>
+        </div>
+    }
+    else if (!Model.CheckoutReady)
+    {
+        <div class="catalog-notice" role="status">
+            <span class="billing-notice-icon" aria-hidden="true">i</span>
+            <div><strong>Paystack is not configured for this environment.</strong><p>Set the matching Paystack key and Basic, Pro, and Max monthly plan codes, then turn off demo mode. Development uses test credentials; production uses live credentials.</p></div>
         </div>
     }
 

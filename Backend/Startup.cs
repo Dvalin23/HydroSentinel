@@ -101,6 +101,8 @@ public static class Startup
         services.AddScoped<DeviceClaimService>();
         services.AddScoped<CustomerPortal>();
         services.AddScoped<PaymentService>();
+        services.AddScoped<RecurringBillingService>();
+        services.AddScoped<NotificationService>();
         services.AddHttpClient<PaystackClient>(c => c.Timeout = TimeSpan.FromSeconds(15));
     }
 
@@ -161,6 +163,62 @@ public static class Startup
                 "CreatedAt" BIGINT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS "IX_SupportMessages_TicketId_CreatedAt" ON "SupportMessages" ("TicketId", "CreatedAt");
+            CREATE TABLE IF NOT EXISTS "RecurringBillingAgreements" (
+                "Id" {idType} NOT NULL PRIMARY KEY,
+                "UserId" TEXT NOT NULL,
+                "PlanId" TEXT NOT NULL,
+                "PaystackPlanCode" TEXT NOT NULL,
+                "PaystackCustomerCode" TEXT NULL,
+                "PaystackSubscriptionCode" TEXT NULL,
+                "Status" TEXT NOT NULL,
+                "VerificationReference" TEXT NULL,
+                "IdempotencyKey" TEXT NOT NULL,
+                "CardBrand" TEXT NULL,
+                "CardLast4" TEXT NULL,
+                "TrialEndsAt" BIGINT NULL,
+                "NextPaymentAt" BIGINT NULL,
+                "CreatedAt" BIGINT NOT NULL,
+                "UpdatedAt" BIGINT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_RecurringBillingAgreements_PaystackSubscriptionCode" ON "RecurringBillingAgreements" ("PaystackSubscriptionCode");
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_RecurringBillingAgreements_VerificationReference" ON "RecurringBillingAgreements" ("VerificationReference");
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_RecurringBillingAgreements_UserId_IdempotencyKey" ON "RecurringBillingAgreements" ("UserId", "IdempotencyKey");
+            CREATE INDEX IF NOT EXISTS "IX_RecurringBillingAgreements_UserId" ON "RecurringBillingAgreements" ("UserId");
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_RecurringBillingAgreements_UserId_Current" ON "RecurringBillingAgreements" ("UserId")
+                WHERE "Status" IN ('pending_card','finalizing','trialing','active','non_renewing','past_due');
+            CREATE TABLE IF NOT EXISTS "RecurringBillingTransactions" (
+                "Id" {idType} NOT NULL PRIMARY KEY,
+                "Reference" TEXT NOT NULL,
+                "AgreementId" {idType} NOT NULL REFERENCES "RecurringBillingAgreements" ("Id") ON DELETE CASCADE,
+                "UserId" TEXT NOT NULL,
+                "PlanId" TEXT NOT NULL,
+                "Kind" TEXT NOT NULL,
+                "AmountMinor" BIGINT NOT NULL,
+                "Currency" TEXT NOT NULL,
+                "Status" TEXT NOT NULL,
+                "Channel" TEXT NULL,
+                "RefundStatus" TEXT NULL,
+                "RefundReference" TEXT NULL,
+                "CreatedAt" BIGINT NOT NULL,
+                "PaidAt" BIGINT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_RecurringBillingTransactions_Reference" ON "RecurringBillingTransactions" ("Reference");
+            CREATE INDEX IF NOT EXISTS "IX_RecurringBillingTransactions_AgreementId_CreatedAt" ON "RecurringBillingTransactions" ("AgreementId", "CreatedAt");
+            CREATE TABLE IF NOT EXISTS "CustomerNotifications" (
+                "Id" {idType} NOT NULL PRIMARY KEY,
+                "UserId" TEXT NOT NULL,
+                "Title" TEXT NOT NULL,
+                "Message" TEXT NOT NULL,
+                "Category" TEXT NOT NULL,
+                "CreatedAt" BIGINT NOT NULL,
+                "IsRead" BOOLEAN NOT NULL,
+                "ReadAt" BIGINT NULL,
+                "Destination" TEXT NULL,
+                "DedupeKey" TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_CustomerNotifications_DedupeKey" ON "CustomerNotifications" ("DedupeKey");
+            CREATE INDEX IF NOT EXISTS "IX_CustomerNotifications_UserId_CreatedAt" ON "CustomerNotifications" ("UserId", "CreatedAt");
+            CREATE INDEX IF NOT EXISTS "IX_CustomerNotifications_UserId_IsRead_CreatedAt" ON "CustomerNotifications" ("UserId", "IsRead", "CreatedAt");
             """;
         await db.Database.ExecuteSqlRawAsync(sql);
     }

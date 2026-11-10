@@ -79,7 +79,7 @@ public static class Endpoints
     {
         // Webhook: signature over the RAW body. Always 200 once authenticated so Paystack stops retrying;
         // settlement re-verifies with Paystack and is idempotent.
-        app.MapPost("/api/paystack/webhook", async (HttpContext http, PaystackClient paystack, PaymentService payments, CancellationToken ct) =>
+        app.MapPost("/api/paystack/webhook", async (HttpContext http, PaystackClient paystack, PaymentService payments, RecurringBillingService recurring, CancellationToken ct) =>
         {
             using var ms = new MemoryStream();
             await http.Request.Body.CopyToAsync(ms, ct);
@@ -89,11 +89,15 @@ public static class Endpoints
                 return Results.StatusCode(401);
 
             string? ev = null, reference = null;
+            JsonElement data;
             try
             {
                 using var doc = JsonDocument.Parse(raw);
                 ev = doc.RootElement.GetProperty("event").GetString();
-                reference = doc.RootElement.GetProperty("data").GetProperty("reference").GetString();
+                data = doc.RootElement.GetProperty("data").Clone();
+                if (data.TryGetProperty("reference", out var refValue)) reference = refValue.GetString();
+                if (string.IsNullOrWhiteSpace(reference) && data.TryGetProperty("transaction", out var transaction) && transaction.ValueKind == JsonValueKind.Object
+                    && transaction.TryGetProperty("reference", out var transactionReference)) reference = transactionReference.GetString();
             }
             catch (Exception ex) when (ex is JsonException or KeyNotFoundException or InvalidOperationException)
             {
@@ -102,16 +106,28 @@ public static class Endpoints
 
             if (ev == "charge.success" && !string.IsNullOrWhiteSpace(reference))
             {
-                var outcome = await payments.VerifyAndSettleAsync(reference!, ct);
-                if (outcome == SettleOutcome.Unverifiable) return Results.StatusCode(503); // ask Paystack to retry
+                if (await recurring.HandleRenewalEventAsync(reference!, data, ct)) return Results.Ok();
+                var recurringResult = await recurring.SettleReferenceAsync(reference!, ct);
+                if (recurringResult == false) return Results.StatusCode(503);
+                if (recurringResult is null)
+                {
+                    var outcome = await payments.VerifyAndSettleAsync(reference!, ct);
+                    if (outcome == SettleOutcome.Unverifiable) return Results.StatusCode(503); // ask Paystack to retry
+                }
             }
+            else if (ev is "subscription.not_renew" or "subscription.disable" or "invoice.payment_failed")
+                await recurring.HandleEventAsync(ev, data, ct);
+            else if (ev is not null && ev.StartsWith("refund.", StringComparison.Ordinal))
+                await recurring.HandleRefundEventAsync(ev, data, ct);
             return Results.Ok();
         }).AllowAnonymous().DisableAntiforgery();
 
         // Browser comes back here after paying. We verify server-side, then show the result page.
-        app.MapGet("/pay/callback", async (string? reference, PaymentService payments, CancellationToken ct) =>
+        app.MapGet("/pay/callback", async (string? reference, PaymentService payments, RecurringBillingService recurring, CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(reference) || reference.Length > 64) return Results.Redirect("/Customer/Payments/Result");
+            var recurringResult = await recurring.SettleReferenceAsync(reference, ct);
+            if (recurringResult == true) return Results.Redirect("/Customer/Payments/Result?reference=" + Uri.EscapeDataString(reference));
             await payments.VerifyAndSettleAsync(reference, ct);
             return Results.Redirect("/Customer/Payments/Result?reference=" + Uri.EscapeDataString(reference));
         }).AllowAnonymous();
@@ -259,11 +275,11 @@ public static class Endpoints
         });
 
         // Server re-prices from PlanCatalog. Client sends only a plan id, month count and idempotency key.
-        g.MapPost("/payments/checkout", async (CheckoutRequest req, ClaimsPrincipal user, PaymentService payments, HttpContext http, CancellationToken ct) =>
+        g.MapPost("/payments/checkout", async (CheckoutRequest req, ClaimsPrincipal user, RecurringBillingService recurring, HttpContext http, CancellationToken ct) =>
         {
-            var r = await payments.StartCheckoutAsync(UserId(user), req.PlanId, req.Months, req.IdempotencyKey, $"{http.Request.Scheme}://{http.Request.Host}", ct);
-            if (!r.Ok) return Problem(http, r.Status, r.Code!, r.Message!);
-            return Results.Ok(new { reference = r.Reference, status = r.PaymentStatus, redirectUrl = r.RedirectUrl, replay = r.Replay });
+            var r = await recurring.StartAsync(UserId(user), req.PlanId, req.IdempotencyKey, req.AcceptedRecurringTerms, $"{http.Request.Scheme}://{http.Request.Host}", ct);
+            if (!r.Ok) return Problem(http, 422, "recurring_checkout_unavailable", r.Message!);
+            return Results.Ok(new { reference = r.Reference, status = "pending", redirectUrl = r.RedirectUrl });
         }).RequireAntiforgery();
 
         g.MapGet("/payments", async (ClaimsPrincipal user, AppDbContext db, CancellationToken ct) =>
@@ -441,7 +457,7 @@ public static class Endpoints
     }
 }
 
-public sealed record CheckoutRequest(string? PlanId, int Months, string? IdempotencyKey);
+public sealed record CheckoutRequest(string? PlanId, int Months, string? IdempotencyKey, bool AcceptedRecurringTerms = false);
 public sealed record RegisterDeviceRequest(string? Serial, string? Name);
 public sealed record ClaimDeviceRequest(string? Serial, string? Key);
 public sealed record AssignRequest(string? Email);

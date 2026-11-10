@@ -12,6 +12,7 @@ public interface IDemoMode
     bool RemoveDevice(string id);
     bool AcknowledgeAlert(string id);
     void MarkNotificationsRead();
+    bool MarkNotificationRead(string id);
     DemoTicket AddTicket(string subject, string category, string? deviceId, string description);
     void UpdateProfile(string fullName, string email, string phone, string company);
     void UpdatePreferences(bool billing, bool support);
@@ -68,6 +69,18 @@ public sealed class DemoMode(IWebHostEnvironment environment, IConfiguration con
     {
         if (!Enabled) return;
         lock (gate) foreach (var notification in state.Notifications) notification.IsRead = true;
+    }
+
+    public bool MarkNotificationRead(string id)
+    {
+        if (!Enabled) return false;
+        lock (gate)
+        {
+            var notification = state.Notifications.FirstOrDefault(x => x.Id == id);
+            if (notification is null) return false;
+            notification.IsRead = true;
+            return true;
+        }
     }
 
     public DemoTicket AddTicket(string subject, string category, string? deviceId, string description)
